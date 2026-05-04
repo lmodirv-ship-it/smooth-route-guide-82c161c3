@@ -176,14 +176,46 @@ const CCDashboard = () => {
 
   useEffect(() => {
     fetchAll();
+    // Unlock audio on first user interaction (browser requirement)
+    const unlock = () => { import("@/lib/notificationSound").then(m => m.unlockAudio()); window.removeEventListener("click", unlock); };
+    window.addEventListener("click", unlock);
+
     const ch = supabase.channel("cc-dash-realtime")
-      .on("postgres_changes", { event: "*", schema: "public", table: "delivery_orders" }, fetchAll)
+      .on("postgres_changes", { event: "INSERT", schema: "public", table: "delivery_orders" }, async (payload: any) => {
+        // 🔔 New order arrived — play sound + show toast
+        try {
+          const { playNewOrderSound } = await import("@/lib/notificationSound");
+          playNewOrderSound();
+        } catch { /* noop */ }
+        const code = payload?.new?.order_code || payload?.new?.id?.toString().slice(0, 6) || "";
+        toast({
+          title: "🛎️ طلب جديد",
+          description: `وصل طلب جديد ${code ? `#${code}` : ""} — يرجى المراجعة الفورية`,
+        });
+        fetchAll();
+      })
+      .on("postgres_changes", { event: "UPDATE", schema: "public", table: "delivery_orders" }, fetchAll)
+      .on("postgres_changes", { event: "DELETE", schema: "public", table: "delivery_orders" }, fetchAll)
       .on("postgres_changes", { event: "*", schema: "public", table: "drivers" }, fetchAll)
       .on("postgres_changes", { event: "*", schema: "public", table: "complaints" }, fetchAll)
-      .on("postgres_changes", { event: "*", schema: "public", table: "alerts" }, fetchAll)
+      .on("postgres_changes", { event: "INSERT", schema: "public", table: "alerts" }, async (payload: any) => {
+        try {
+          const { playNewOrderSound } = await import("@/lib/notificationSound");
+          playNewOrderSound();
+        } catch { /* noop */ }
+        toast({
+          title: "⚠️ تنبيه جديد",
+          description: payload?.new?.message || payload?.new?.title || "تنبيه جديد في النظام",
+          variant: "destructive",
+        });
+        fetchAll();
+      })
       .subscribe();
-    // Realtime only — no polling (per project policy)
-    return () => { supabase.removeChannel(ch); };
+
+    return () => {
+      supabase.removeChannel(ch);
+      window.removeEventListener("click", unlock);
+    };
   }, [fetchAll]);
 
   const statCards = [
