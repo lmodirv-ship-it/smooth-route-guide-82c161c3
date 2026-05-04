@@ -79,6 +79,7 @@ import AutoImport from "@/admin/pages/callcenter/AutoImport";
 import GoogleMapsImport from "@/admin/pages/callcenter/GoogleMapsImport";
 import AssistantKnowledge from "@/admin/pages/callcenter/AssistantKnowledge";
 import InternalMessaging from "@/admin/pages/callcenter/InternalMessaging";
+import Relations360 from "@/admin/pages/callcenter/Relations360";
 import WalletRechargeRequests from "@/admin/pages/callcenter/WalletRechargeRequests";
 import CallCenterLogin from "@/admin/pages/CallCenterLogin";
 import AdminLogin from "@/admin/pages/AdminLogin";
@@ -161,6 +162,7 @@ export const adminRouteElements = (
       <Route path="wallet-recharge" element={<WalletRechargeRequests />} />
       <Route path="payments" element={<PaymentManagement />} />
       <Route path="prospecting" element={<Prospecting />} />
+      <Route path="relations" element={<Relations360 />} />
     </Route>
 
     {/* ═══ Supervisor Panel ═══ */}

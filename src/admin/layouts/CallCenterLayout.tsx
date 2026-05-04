@@ -38,6 +38,7 @@ const CallCenterLayout = () => {
 
   const baseNavItems = [
     { path: "/call-center", icon: BarChart3, label: t.callCenter.dashboard },
+    { path: "/call-center/relations", icon: Users, label: "🔗 العلاقات 360°" },
     { path: "/call-center/delivery", icon: PlusCircle, label: t.callCenter.deliveryOrders },
     { path: "/call-center/drivers", icon: Car, label: t.callCenter.driversMenu },
     { path: "/call-center/incoming", icon: PhoneCall, label: t.callCenter.incomingCalls },
