@@ -21,14 +21,29 @@ const detectDevice = () => {
 };
 
 const fetchGeoInfo = async (): Promise<{ country: string; city: string }> => {
+  // Primary: ipwho.is (HTTPS, free, CORS-enabled, no strict limits)
   try {
-    const res = await fetch("https://ip-api.com/json/?fields=country,city&lang=en", { signal: AbortSignal.timeout(3000) });
-    if (!res.ok) return { country: "", city: "" };
-    const data = await res.json();
-    return { country: data.country || "", city: data.city || "" };
+    const res = await fetch("https://ipwho.is/?fields=country,city,success", { signal: AbortSignal.timeout(3500) });
+    if (res.ok) {
+      const data = await res.json();
+      if (data?.success !== false) {
+        return { country: data.country || "", city: data.city || "" };
+      }
+    }
   } catch {
-    return { country: "", city: "" };
+    // fall through to fallback
   }
+  // Fallback: ipapi.co
+  try {
+    const res = await fetch("https://ipapi.co/json/", { signal: AbortSignal.timeout(3500) });
+    if (res.ok) {
+      const data = await res.json();
+      return { country: data.country_name || "", city: data.city || "" };
+    }
+  } catch {
+    /* ignore */
+  }
+  return { country: "", city: "" };
 };
 
 interface Stats {
