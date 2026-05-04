@@ -33,6 +33,63 @@ const AdminRestaurants = () => {
   const [generatedStores, setGeneratedStores] = useState<any[]>([]);
   const [generating, setGenerating] = useState(false);
   const [saving, setSaving] = useState(false);
+  const [autoMenu, setAutoMenu] = useState(true);
+  const [generatingMenuFor, setGeneratingMenuFor] = useState<string | null>(null);
+
+  // Generate menu for one store via AI and persist to DB
+  const generateMenuForStore = async (store: any): Promise<{ cats: number; items: number }> => {
+    const { data, error } = await supabase.functions.invoke("generate-menu", {
+      body: {
+        restaurantName: store.name,
+        restaurantCategory: store.category || "restaurant",
+        restaurantAddress: store.address || "",
+      },
+    });
+    if (error) throw error;
+    const menu = data?.menu;
+    if (!menu?.categories?.length) throw new Error("AI returned empty menu");
+
+    let catCount = 0, itemCount = 0;
+    for (let i = 0; i < menu.categories.length; i++) {
+      const c = menu.categories[i];
+      const { data: catRow, error: catErr } = await supabase
+        .from("menu_categories")
+        .insert({ store_id: store.id, name_ar: c.name_ar, name_fr: c.name_fr || c.name_ar, sort_order: i })
+        .select("id").single();
+      if (catErr) continue;
+      catCount++;
+      const itemsPayload = (c.items || []).map((it: any, j: number) => ({
+        store_id: store.id,
+        category_id: catRow.id,
+        name_ar: it.name_ar,
+        name_fr: it.name_fr || it.name_ar,
+        description_ar: it.description_ar || "",
+        price: Number(it.price) || 0,
+        is_available: true,
+        sort_order: j,
+      }));
+      if (itemsPayload.length) {
+        const { error: itErr } = await supabase.from("menu_items").insert(itemsPayload);
+        if (!itErr) itemCount += itemsPayload.length;
+      }
+    }
+    return { cats: catCount, items: itemCount };
+  };
+
+  const regenerateMenuForStore = async (store: any) => {
+    setGeneratingMenuFor(store.id);
+    try {
+      // Wipe existing
+      await supabase.from("menu_items").delete().eq("store_id", store.id);
+      await supabase.from("menu_categories").delete().eq("store_id", store.id);
+      const { cats, items } = await generateMenuForStore(store);
+      toast({ title: `✅ ${store.name}: ${cats} فئة / ${items} منتج` });
+      fetchAll();
+    } catch (e: any) {
+      toast({ title: "خطأ في توليد القائمة", description: e.message, variant: "destructive" });
+    }
+    setGeneratingMenuFor(null);
+  };
 
   const generateStoreCode = () => {
     return String(Math.floor(100000 + Math.random() * 900000));
