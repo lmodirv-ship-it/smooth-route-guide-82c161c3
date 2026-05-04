@@ -7,7 +7,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { toast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { useI18n } from "@/i18n/context";
-import { useInAppCall } from "@/hooks/useInAppCall";
+import { useCall as useInAppCall } from "@/contexts/CallContext";
 import InAppCallDialog from "@/components/calls/InAppCallDialog";
 
 const ClientSupport = () => {

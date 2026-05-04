@@ -12,7 +12,7 @@ import CancelRideDialog from "@/components/CancelRideDialog";
 import { useSmoothedPosition } from "@/hooks/useSmoothedPosition";
 import { usePricingSettings } from "@/hooks/usePricingSettings";
 import { useI18n } from "@/i18n/context";
-import { useInAppCall } from "@/hooks/useInAppCall";
+import { useCall as useInAppCall } from "@/contexts/CallContext";
 import InAppCallDialog from "@/components/calls/InAppCallDialog";
 
 function haversineKm(a: { lat: number; lng: number }, b: { lat: number; lng: number }) {

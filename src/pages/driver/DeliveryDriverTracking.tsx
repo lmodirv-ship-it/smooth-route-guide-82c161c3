@@ -11,7 +11,7 @@ import { supabase } from "@/integrations/supabase/client";
 import LeafletMap from "@/components/LeafletMap";
 import { useSmoothedPosition } from "@/hooks/useSmoothedPosition";
 import { useI18n } from "@/i18n/context";
-import { useInAppCall } from "@/hooks/useInAppCall";
+import { useCall as useInAppCall } from "@/contexts/CallContext";
 import InAppCallDialog from "@/components/calls/InAppCallDialog";
 import RatingDialog from "@/components/RatingDialog";
 import QuickChatMessages from "@/components/driver/QuickChatMessages";

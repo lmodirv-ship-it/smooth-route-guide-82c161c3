@@ -9,7 +9,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { useI18n } from "@/i18n/context";
 import { cn } from "@/lib/utils";
-import { useInAppCall } from "@/hooks/useInAppCall";
+import { useCall as useInAppCall } from "@/contexts/CallContext";
 import InAppCallDialog from "@/components/calls/InAppCallDialog";
 
 interface Contact {

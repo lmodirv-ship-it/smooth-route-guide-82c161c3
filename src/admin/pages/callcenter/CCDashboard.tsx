@@ -27,7 +27,7 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
-import { useInAppCall } from "@/hooks/useInAppCall";
+import { useCall as useInAppCall } from "@/contexts/CallContext";
 import InAppCallDialog from "@/components/calls/InAppCallDialog";
 
 const ORDER_STAGES = [

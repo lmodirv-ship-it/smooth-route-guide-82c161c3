@@ -9,7 +9,7 @@ import LeafletMap from "@/components/LeafletMap";
 import { useSmoothedPosition } from "@/hooks/useSmoothedPosition";
 import RideChat from "@/components/RideChat";
 import CancelRideDialog from "@/components/CancelRideDialog";
-import { useInAppCall } from "@/hooks/useInAppCall";
+import { useCall as useInAppCall } from "@/contexts/CallContext";
 import InAppCallDialog from "@/components/calls/InAppCallDialog";
 
 function haversineKm(a: { lat: number; lng: number }, b: { lat: number; lng: number }) {
