@@ -19,6 +19,7 @@ import SmartErrorBoundary from "@/components/SmartErrorBoundary";
 import TrackingScripts from "@/components/TrackingScripts";
 import CookieConsentBanner from "@/components/CookieConsentBanner";
 import HNChatbot from "@/components/HNChatbot";
+import GlobalCallProvider from "@/components/calls/GlobalCallProvider";
 
 // ─── Module route elements ───
 import { mainRouteElements } from "./app/index";
