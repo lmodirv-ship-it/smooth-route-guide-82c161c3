@@ -721,7 +721,7 @@ const CCDashboard = () => {
                         <div className="flex items-center justify-center gap-1 flex-wrap">
                           {p.phone && (
                             <>
-                              <a href={`tel:${p.phone}`} onClick={() => updateProspect(p.id, { call_status: "called", last_called_at: new Date().toISOString() })}>
+                              <a href={`tel:${p.phone}`} onClick={() => updateProspect(p.id, { call_status: "called"})}>
                                 <button className="px-1.5 py-1 rounded-lg bg-emerald-500/20 text-emerald-400 hover:bg-emerald-500/30 transition-colors" title="اتصال">
                                   <Phone className="w-3 h-3" />
                                 </button>
