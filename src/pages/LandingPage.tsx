@@ -112,6 +112,7 @@ export default function LandingPage() {
   const [menuOpen, setMenuOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
   const [storeDialogOpen, setStoreDialogOpen] = useState(false);
+  const [dbPartnerSites, setDbPartnerSites] = useState<DbPartnerSite[]>([]);
   const lt = t.landing;
 
   // Auto-redirect logged-in users to their dashboard
