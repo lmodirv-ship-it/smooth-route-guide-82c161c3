@@ -12,6 +12,7 @@ import AdminDashboardPage from "@/admin/pages/Dashboard";
 import RegisteredUsers from "@/admin/pages/RegisteredUsers";
 import AdminRideRequests from "@/admin/pages/RideRequests";
 import AdminDrivers from "@/admin/pages/Drivers";
+import DriverPipeline from "@/admin/pages/DriverPipeline";
 import AdminClients from "@/admin/pages/Clients";
 import AdminEarnings from "@/admin/pages/Earnings";
 import AdminLiveMap from "@/admin/pages/LiveMap";
@@ -92,6 +93,7 @@ export const adminRouteElements = (
       <Route path="users" element={<RegisteredUsers />} />
       <Route path="requests" element={<AdminRideRequests />} />
       <Route path="drivers" element={<AdminDrivers />} />
+      <Route path="driver-pipeline" element={<DriverPipeline />} />
       <Route path="clients" element={<AdminClients />} />
       <Route path="earnings" element={<AdminEarnings />} />
       <Route path="map" element={<AdminLiveMap />} />
