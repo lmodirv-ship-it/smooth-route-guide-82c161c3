@@ -1,7 +1,12 @@
 import { useEffect, useRef, useState, useCallback } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Camera, CameraOff, Eye } from "lucide-react";
-import * as faceapi from "face-api.js";
+type FaceApi = typeof import("face-api.js");
+let faceapiPromise: Promise<FaceApi> | null = null;
+const loadFaceApi = () => {
+  if (!faceapiPromise) faceapiPromise = import("face-api.js");
+  return faceapiPromise;
+};
 
 /**
  * Compact face-based presence tracker for header bar.
