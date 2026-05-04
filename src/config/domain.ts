@@ -14,6 +14,11 @@ export const LEGACY_DOMAIN = "hn-driver.net";
 export const LEGACY_URL = "https://www.hn-driver.net";
 export const LEGACY_ADMIN_URL = "https://admin.hn-driver.net";
 
+/** Alternate .company domain — purchased via Lovable */
+export const COMPANY_DOMAIN = "hndriver.company";
+export const COMPANY_URL = "https://www.hndriver.company";
+export const COMPANY_ADMIN_URL = "https://admin.hndriver.company";
+
 /** Server IPs */
 export const SERVERS = {
   primary: "213.156.132.166",
