@@ -40,6 +40,7 @@ import AutoImport from "@/admin/pages/callcenter/AutoImport";
 import GoogleMapsImport from "@/admin/pages/callcenter/GoogleMapsImport";
 import AssistantKnowledge from "@/admin/pages/callcenter/AssistantKnowledge";
 import InternalMessaging from "@/admin/pages/callcenter/InternalMessaging";
+import Relations360 from "@/admin/pages/callcenter/Relations360";
 import AdminLiveMap from "@/admin/pages/LiveMap";
 import AdminAlerts from "@/admin/pages/Alerts";
 import CommunityChat from "@/pages/CommunityChat";
