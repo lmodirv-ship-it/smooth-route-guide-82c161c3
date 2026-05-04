@@ -69,6 +69,16 @@ export const COMPANY_SUBDOMAINS = {
 /** All supported domains for CORS / auth redirect checks */
 export const ALL_DOMAINS = ["hn-driver.com", "hn-driver.net", "hn-driver.online", "hn-driver.site", "hndriver.company"] as const;
 
+/**
+ * APK Failover priority — used by the native splash and runtime healthcheck.
+ * Order matters: hndriver.company is the Lovable-managed primary (paid 1y).
+ */
+export const APK_DOMAIN_PRIORITY = [
+  "https://hndriver.company",
+  "https://www.hn-driver.com",
+  "https://www.hn-driver.net",
+] as const;
+
 /** Main pages with their full URLs — useful for sitemaps, sharing, etc. */
 export const MAIN_PAGES = {
   home: { path: "/", url: "https://www.hn-driver.com", label: "الصفحة الرئيسية" },
