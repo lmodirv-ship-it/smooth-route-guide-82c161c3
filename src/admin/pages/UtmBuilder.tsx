@@ -10,10 +10,20 @@ const PRESETS = {
 };
 
 const BASE_URLS = [
+  { label: "🎯 صفحة التسجيل (موصى بها للحملات)", value: "https://www.hn-driver.com/auth/client" },
   { label: "🌐 الموقع الرئيسي", value: "https://www.hn-driver.com" },
   { label: "🚗 صفحة السائقين", value: "https://www.hn-driver.com/driver" },
   { label: "📦 صفحة التوصيل", value: "https://www.hn-driver.com/delivery" },
   { label: "📱 تحميل التطبيق", value: "https://www.hn-driver.com/downloads" },
+];
+
+type Preset = { label: string; baseUrl: string; source: string; medium: string; campaign: string; content?: string };
+const QUICK_PRESETS: Preset[] = [
+  { label: "📘 فيسبوك — تسجيل 50د", baseUrl: "https://www.hn-driver.com/auth/client", source: "facebook", medium: "cpc", campaign: "signup_50dh", content: "fb_feed" },
+  { label: "📸 إنستغرام — تسجيل 50د", baseUrl: "https://www.hn-driver.com/auth/client", source: "instagram", medium: "cpc", campaign: "signup_50dh", content: "ig_story" },
+  { label: "🎵 تيك توك — تسجيل 50د", baseUrl: "https://www.hn-driver.com/auth/client", source: "tiktok", medium: "cpc", campaign: "signup_50dh", content: "tt_video" },
+  { label: "🔍 Google Ads — تسجيل", baseUrl: "https://www.hn-driver.com/auth/client", source: "google", medium: "cpc", campaign: "signup_50dh", content: "search_ads" },
+  { label: "💬 واتساب — تسجيل", baseUrl: "https://www.hn-driver.com/auth/client", source: "whatsapp", medium: "social", campaign: "signup_50dh", content: "wa_status" },
 ];
 
 const UtmBuilder = () => {
