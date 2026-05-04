@@ -257,20 +257,74 @@ export default function UserDetailSheet({ user, open, onOpenChange, currentUserI
 
           <Separator />
 
-          {/* Roles Management */}
+          {/* Roles Management — single primary role + admin toggle */}
           <div className="space-y-3">
-            <p className="text-sm font-semibold text-foreground flex items-center gap-2"><UserCog className="w-4 h-4" /> إدارة الأدوار</p>
-            <div className="grid grid-cols-2 gap-2">
-              {Object.entries(ROLE_LABELS).map(([key, label]) => (
-                <label key={key} className={`flex items-center gap-2 p-2 rounded-lg border cursor-pointer transition-colors text-sm ${selectedRoles.includes(key) ? "border-primary bg-primary/5" : "border-border hover:bg-muted/50"}`}>
-                  <Checkbox checked={selectedRoles.includes(key)} onCheckedChange={() => toggleRole(key)} />
-                  <Badge className={`text-xs ${ROLE_COLORS[key] || ROLE_COLORS.user}`}>{label}</Badge>
-                </label>
-              ))}
+            <div className="flex items-center justify-between">
+              <p className="text-sm font-semibold text-foreground flex items-center gap-2">
+                <UserCog className="w-4 h-4" /> إدارة الأدوار
+              </p>
+              {isOwner && (
+                <Badge className="gap-1 bg-amber-500/15 text-amber-600 border-amber-500/30">
+                  <Crown className="w-3 h-3" /> المالك
+                </Badge>
+              )}
             </div>
-            <Button onClick={handleSaveRoles} disabled={saving || selectedRoles.length === 0} className="w-full gap-2" size="sm">
-              {saving ? <Loader2 className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />} حفظ الأدوار
-            </Button>
+
+            {isOwner ? (
+              <div className="rounded-lg border border-amber-500/30 bg-amber-500/5 p-3 text-sm text-foreground flex items-start gap-2">
+                <Lock className="w-4 h-4 mt-0.5 text-amber-600" />
+                <div>
+                  <p className="font-semibold">حساب المالك محمي</p>
+                  <p className="text-xs text-muted-foreground">لا يمكن تعديل أدوار المالك ({OWNER_EMAIL}).</p>
+                </div>
+              </div>
+            ) : (
+              <>
+                <p className="text-xs text-muted-foreground">اختر دوراً واحداً رئيسياً (يمكن إضافة المسؤول كصلاحية إضافية فقط)</p>
+                <RadioGroup
+                  value={selectedRoles.find(r => r !== "admin") || ""}
+                  onValueChange={setSingleRole}
+                  className="grid grid-cols-2 gap-2"
+                >
+                  {Object.entries(ROLE_LABELS).filter(([k]) => k !== "admin").map(([key, label]) => {
+                    const checked = selectedRoles.includes(key);
+                    return (
+                      <label
+                        key={key}
+                        className={`flex items-center gap-2 p-2 rounded-lg border cursor-pointer transition-colors text-sm ${checked ? "border-primary bg-primary/5" : "border-border hover:bg-muted/50"}`}
+                      >
+                        <RadioGroupItem value={key} />
+                        <Badge className={`text-xs ${ROLE_COLORS[key] || ROLE_COLORS.user}`}>{label}</Badge>
+                      </label>
+                    );
+                  })}
+                </RadioGroup>
+
+                <div className="flex items-center justify-between p-3 rounded-lg border border-destructive/30 bg-destructive/5">
+                  <div className="flex items-center gap-2">
+                    <Shield className="w-4 h-4 text-destructive" />
+                    <div>
+                      <p className="text-sm font-semibold">صلاحيات المسؤول (Admin)</p>
+                      <p className="text-xs text-muted-foreground">يمنح وصولاً كاملاً للوحة الإدارة</p>
+                    </div>
+                  </div>
+                  <Switch
+                    checked={isAdminUser}
+                    onCheckedChange={(c) => {
+                      if (isSelf && isCurrentlyAdmin && !c) {
+                        toast({ title: "⚠️ لا يمكنك إزالة دور المسؤول عن نفسك", variant: "destructive" });
+                        return;
+                      }
+                      toggleAdminExtra("admin", c);
+                    }}
+                  />
+                </div>
+
+                <Button onClick={handleSaveRoles} disabled={saving || selectedRoles.length === 0} className="w-full gap-2" size="sm">
+                  {saving ? <Loader2 className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />} حفظ الأدوار
+                </Button>
+              </>
+            )}
           </div>
 
           <Separator />
