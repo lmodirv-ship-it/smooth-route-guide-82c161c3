@@ -575,6 +575,10 @@ const RestaurantsCC = () => {
                 <Label className="text-xs text-muted-foreground">رقم الهاتف</Label>
                 <Input value={storeForm.phone} onChange={e => setStoreForm(p => ({ ...p, phone: e.target.value }))} className="bg-secondary/60 border-border mt-1" />
               </div>
+              <div>
+                <Label className="text-xs text-muted-foreground">Email</Label>
+                <Input type="email" value={storeForm.email} onChange={e => setStoreForm(p => ({ ...p, email: e.target.value }))} className="bg-secondary/60 border-border mt-1" />
+              </div>
               <div className="grid grid-cols-2 gap-3">
                 <div>
                   <Label className="text-xs text-muted-foreground">وقت التحضير (أدنى)</Label>
