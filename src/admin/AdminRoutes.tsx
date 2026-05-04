@@ -129,6 +129,7 @@ export const adminRouteElements = (
       <Route path="prospecting" element={<Prospecting />} />
       <Route path="mailbluster" element={<MailBlusterTemplates />} />
       <Route path="api-keys" element={<ApiKeysPage />} />
+      <Route path="partner-sites" element={<PartnerSitesManagement />} />
     </Route>
 
     <Route path="/call-center" element={<RequireRole allowed={["admin", "agent", "smart_admin_assistant"]}><CallCenterLayout /></RequireRole>}>
