@@ -24,15 +24,18 @@ const AgentFacePresence = () => {
   const timerRef = useRef<NodeJS.Timeout | null>(null);
   const streamRef = useRef<MediaStream | null>(null);
 
-  // Load face-api models
-  useEffect(() => {
-    const loadModels = async () => {
-      const MODEL_URL = "https://cdn.jsdelivr.net/npm/@vladmandic/face-api/model";
-      await faceapi.nets.tinyFaceDetector.loadFromUri(MODEL_URL);
-      setModelsLoaded(true);
-    };
-    loadModels();
-  }, []);
+  const faceapiRef = useRef<FaceApi | null>(null);
+
+  // Lazy-load face-api models only when camera is toggled on
+  const ensureModels = useCallback(async () => {
+    if (modelsLoaded) return faceapiRef.current!;
+    const faceapi = await loadFaceApi();
+    faceapiRef.current = faceapi;
+    const MODEL_URL = "https://cdn.jsdelivr.net/npm/@vladmandic/face-api/model";
+    await faceapi.nets.tinyFaceDetector.loadFromUri(MODEL_URL);
+    setModelsLoaded(true);
+    return faceapi;
+  }, [modelsLoaded]);
 
   const startPresenceInterval = useCallback(async () => {
     const { data: { user } } = await supabase.auth.getUser();
