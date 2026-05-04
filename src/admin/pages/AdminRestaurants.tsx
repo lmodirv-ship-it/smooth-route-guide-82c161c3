@@ -361,6 +361,7 @@ const AdminRestaurants = () => {
                       <TableHead>{tr.rating}</TableHead>
                       <TableHead>{tr.commission}</TableHead>
                       <TableHead>{tr.confirmation}</TableHead>
+                      <TableHead>القائمة</TableHead>
                       <TableHead>{tr.actions}</TableHead>
                     </TableRow>
                  </TableHeader>
