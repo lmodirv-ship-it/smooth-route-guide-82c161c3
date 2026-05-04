@@ -215,10 +215,7 @@ const DriverPage = () => {
   }, [selectedOrder]);
 
   const handleAccept = async (orderId: string) => {
-    if (subscriptionExpired) {
-      toast({ title: "اشتراك مطلوب", description: "يجب الاشتراك في باقة لقبول الطلبات", variant: "destructive" });
-      navigate("/driver/subscription"); return;
-    }
+    // Subscription gate disabled — platform is free
     if (activeRideId) {
       toast({ title: t.driver.activeRide, description: t.driver.completeCurrentFirst, variant: "destructive" });
       navigate(`/driver/tracking?id=${activeRideId}`); return;
