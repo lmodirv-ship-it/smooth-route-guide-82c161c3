@@ -47,6 +47,27 @@ import projCloud from "@/assets/project-cloud.png";
 import projAiVideo from "@/assets/project-ai-video.png";
 import projLivraisonExpress from "@/assets/project-livraison-express.jpg";
 import { HN_PROJECTS } from "@/data/hnGroupeProjects";
+import { screenshotUrl } from "@/lib/screenshotUrl";
+import * as LucideIcons from "lucide-react";
+
+type DbPartnerSite = {
+  id: string;
+  slug: string;
+  name_ar: string;
+  name_en: string;
+  description_ar: string;
+  description_en: string;
+  url: string;
+  tags: string[];
+  status: string;
+  is_featured: boolean;
+  sort_order: number;
+  custom_screenshot_url: string | null;
+  icon_name: string;
+  gradient: string;
+  rating: number;
+  users_label: string;
+};
 
 const fadeUp = {
   hidden: { opacity: 0, y: 30 },
