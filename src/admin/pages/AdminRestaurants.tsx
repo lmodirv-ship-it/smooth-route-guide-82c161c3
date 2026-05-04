@@ -343,6 +343,16 @@ const AdminRestaurants = () => {
           <Button onClick={saveGeneratedStores} disabled={saving || generatedStores.length === 0} className="gap-1 bg-blue-600 hover:bg-blue-700 text-white">
             {saving ? <Loader2 className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />} {tr.save}
           </Button>
+          <Button
+            onClick={generateMenusForAllEmpty}
+            disabled={!!bulkMenuProgress}
+            className="gap-1 bg-purple-600 hover:bg-purple-700 text-white"
+            title="توليد قوائم لكل المطاعم الفارغة"
+          >
+            {bulkMenuProgress
+              ? <><Loader2 className="w-4 h-4 animate-spin" /> {bulkMenuProgress.current}/{bulkMenuProgress.total}</>
+              : <><Sparkles className="w-4 h-4" /> توليد قوائم الفارغة</>}
+          </Button>
           <Button onClick={openAddStore} className="gap-1"><Plus className="w-4 h-4" /> {tr.addRestaurant}</Button>
         </div>
       </div>
