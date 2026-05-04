@@ -6,8 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Badge } from "@/components/ui/badge";
 import { supabase } from "@/integrations/supabase/client";
-import { useContext } from "react";
-import * as CartCtxModule from "@/contexts/CartContext";
+import { useCart } from "@/contexts/CartContext";
 import { toast } from "@/hooks/use-toast";
 
 interface Props {
@@ -17,12 +16,17 @@ interface Props {
   onBack?: () => void;
 }
 
+const NOOP_CART: any = {
+  items: [], totalItems: 0, totalPrice: 0,
+  addItem: () => {}, updateQuantity: () => {}, removeItem: () => {},
+  clearCart: () => {}, storeId: null, storeName: null,
+};
+const useSafeCart = () => { try { return useCart(); } catch { return NOOP_CART; } };
+
 const RestaurantMenuView = ({ storeId, mode = "customer", onBack }: Props) => {
   const navigate = useNavigate();
   const isReadonly = mode === "readonly";
-  // Cart hook is only used in customer mode
-  const cart = useCart();
-  const { addItem, items, totalItems, totalPrice, updateQuantity } = cart;
+  const { addItem, items, totalItems, totalPrice, updateQuantity } = useSafeCart();
 
   const [store, setStore] = useState<any>(null);
   const [categories, setCategories] = useState<any[]>([]);
