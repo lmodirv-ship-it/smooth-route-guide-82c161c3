@@ -5,8 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { toast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
-import { useInAppCall } from "@/hooks/useInAppCall";
-import InAppCallDialog from "@/components/calls/InAppCallDialog";
+import { useCall as useInAppCall } from "@/contexts/CallContext";
 import deliveryLogo from "@/assets/hn-delivery-logo.jpeg";
 
 const reasons = [
@@ -174,24 +173,7 @@ const DeliverySupport = () => {
           )}
         </Button>
       </div>
-
-      <InAppCallDialog
-        incomingCall={inAppCall.incomingCall}
-        activeCall={inAppCall.activeCall}
-        localStream={inAppCall.localStream}
-        remoteStream={inAppCall.remoteStream}
-        isMuted={inAppCall.isMuted}
-        isVideoEnabled={inAppCall.isVideoEnabled}
-        callDuration={inAppCall.callDuration}
-        connectionQuality={inAppCall.connectionQuality}
-        busy={inAppCall.busy}
-        onAccept={inAppCall.acceptCall}
-        
-        onEnd={inAppCall.endCall}
-        onToggleMute={inAppCall.toggleMute}
-        onToggleVideo={inAppCall.toggleVideo}
-      />
-    </div>
+</div>
   );
 };
 

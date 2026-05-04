@@ -19,6 +19,8 @@ import SmartErrorBoundary from "@/components/SmartErrorBoundary";
 import TrackingScripts from "@/components/TrackingScripts";
 import CookieConsentBanner from "@/components/CookieConsentBanner";
 import HNChatbot from "@/components/HNChatbot";
+import GlobalCallProvider from "@/components/calls/GlobalCallProvider";
+import { CallProvider } from "@/contexts/CallContext";
 
 // ─── Module route elements ───
 import { mainRouteElements } from "./app/index";
@@ -40,11 +42,14 @@ const AppInner = () => {
   useTheme(); // Load and apply active theme from DB
   return (
     <BrowserRouter>
-      <Routes>
-        {mainRouteElements}
-        {adminRouteElements}
-      </Routes>
-      <HNChatbot />
+      <CallProvider>
+        <Routes>
+          {mainRouteElements}
+          {adminRouteElements}
+        </Routes>
+        <HNChatbot />
+        <GlobalCallProvider />
+      </CallProvider>
     </BrowserRouter>
   );
 };

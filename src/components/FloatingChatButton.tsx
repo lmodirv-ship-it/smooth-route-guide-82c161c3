@@ -9,8 +9,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { useI18n } from "@/i18n/context";
 import { cn } from "@/lib/utils";
-import { useInAppCall } from "@/hooks/useInAppCall";
-import InAppCallDialog from "@/components/calls/InAppCallDialog";
+import { useCall as useInAppCall } from "@/contexts/CallContext";
 
 interface Contact {
   id: string;
@@ -110,23 +109,7 @@ const FloatingChatButton = () => {
 
   return (
     <>
-      <InAppCallDialog
-        incomingCall={inAppCall.incomingCall}
-        activeCall={inAppCall.activeCall}
-        localStream={inAppCall.localStream}
-        remoteStream={inAppCall.remoteStream}
-        isMuted={inAppCall.isMuted}
-        isVideoEnabled={inAppCall.isVideoEnabled}
-        busy={inAppCall.busy}
-        callDuration={inAppCall.callDuration}
-        connectionQuality={inAppCall.connectionQuality}
-        onAccept={inAppCall.acceptCall}
-        onEnd={inAppCall.endCall}
-        onToggleMute={inAppCall.toggleMute}
-        onToggleVideo={inAppCall.toggleVideo}
-      />
-
-      <button
+<button
         onClick={() => setOpen(!open)}
         className="p-1.5 rounded-full border border-border bg-secondary text-foreground hover:bg-primary hover:text-primary-foreground transition-all"
         title="جهات الاتصال والدردشة"

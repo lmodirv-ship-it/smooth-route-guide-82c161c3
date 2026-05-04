@@ -9,8 +9,7 @@ import LeafletMap from "@/components/LeafletMap";
 import { useSmoothedPosition } from "@/hooks/useSmoothedPosition";
 import RideChat from "@/components/RideChat";
 import CancelRideDialog from "@/components/CancelRideDialog";
-import { useInAppCall } from "@/hooks/useInAppCall";
-import InAppCallDialog from "@/components/calls/InAppCallDialog";
+import { useCall as useInAppCall } from "@/contexts/CallContext";
 
 function haversineKm(a: { lat: number; lng: number }, b: { lat: number; lng: number }) {
   const toRad = (v: number) => (v * Math.PI) / 180;
@@ -316,23 +315,7 @@ const CustomerTracking = () => {
           onCancelled={() => navigate("/customer")}
         />
       )}
-
-      <InAppCallDialog
-        incomingCall={inAppCall.incomingCall}
-        activeCall={inAppCall.activeCall}
-        localStream={inAppCall.localStream}
-        remoteStream={inAppCall.remoteStream}
-        isMuted={inAppCall.isMuted}
-        isVideoEnabled={inAppCall.isVideoEnabled}
-        onAccept={inAppCall.acceptCall}
-        onEnd={inAppCall.endCall}
-        onToggleMute={inAppCall.toggleMute}
-        onToggleVideo={inAppCall.toggleVideo}
-        busy={inAppCall.busy}
-        callDuration={inAppCall.callDuration}
-        connectionQuality={inAppCall.connectionQuality}
-      />
-    </div>
+</div>
   );
 };
 
