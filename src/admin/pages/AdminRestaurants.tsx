@@ -432,6 +432,7 @@ const AdminRestaurants = () => {
                         <TableCell className="font-mono text-sm font-bold">{s.store_code || "—"}</TableCell>
                         <TableCell className="font-bold">{s.name}</TableCell>
                         <TableCell className="text-muted-foreground direction-ltr">{s.phone || "—"}</TableCell>
+                        <TableCell className="text-muted-foreground direction-ltr text-xs">{s.email || "—"}</TableCell>
                         <TableCell className="text-muted-foreground">{s.address}</TableCell>
                         <TableCell className="text-sm">{s.city || "—"}</TableCell>
                         <TableCell className="text-sm">{s.country || "—"}</TableCell>
