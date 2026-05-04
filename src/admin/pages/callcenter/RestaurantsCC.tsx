@@ -379,6 +379,11 @@ const RestaurantsCC = () => {
             <Button onClick={saveGeneratedStores} disabled={savingGenerated || generatedStores.length === 0} className="gap-1 bg-blue-600 hover:bg-blue-700 text-white">
               {savingGenerated ? <Loader2 className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />} حفظ
             </Button>
+            <Button onClick={generateMenusForAllEmpty} disabled={!!bulkMenuProgress} className="gap-1 bg-purple-600 hover:bg-purple-700 text-white">
+              {bulkMenuProgress
+                ? <><Loader2 className="w-4 h-4 animate-spin" /> {bulkMenuProgress.current}/{bulkMenuProgress.total}</>
+                : <><Sparkles className="w-4 h-4" /> توليد قوائم الفارغة</>}
+            </Button>
             <Button onClick={() => openStoreForm()} className="gap-2 text-sm font-bold">
               <Plus className="w-5 h-5" /> إضافة مطعم
             </Button>
