@@ -579,6 +579,7 @@ const AdminRestaurants = () => {
             <div><Label>{tr.description}</Label><Input value={storeForm.description} onChange={(e) => setStoreForm({ ...storeForm, description: e.target.value })} /></div>
             <div><Label>{tr.address}</Label><Input value={storeForm.address} onChange={(e) => setStoreForm({ ...storeForm, address: e.target.value })} /></div>
             <div><Label>{tr.phone}</Label><Input value={storeForm.phone} onChange={(e) => setStoreForm({ ...storeForm, phone: e.target.value })} /></div>
+            <div><Label>Email</Label><Input type="email" value={storeForm.email} onChange={(e) => setStoreForm({ ...storeForm, email: e.target.value })} /></div>
             <div className="grid grid-cols-2 gap-3">
               <div><Label>{tr.deliveryFee} (DH)</Label><Input type="number" value={storeForm.delivery_fee} onChange={(e) => setStoreForm({ ...storeForm, delivery_fee: +e.target.value })} /></div>
               <div><Label>{tr.rating}</Label><Input type="number" step="0.1" value={storeForm.rating} onChange={(e) => setStoreForm({ ...storeForm, rating: +e.target.value })} /></div>
