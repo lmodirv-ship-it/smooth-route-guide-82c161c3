@@ -12,8 +12,9 @@ import type { Database } from "@/integrations/supabase/types";
 import {
   User, Phone, Mail, Calendar, Shield, Wallet, Car, MapPin,
   KeyRound, Save, Loader2, Eye, EyeOff, Copy, Check,
-  Star, Ban, CheckCircle, History, ShieldAlert, UserPlus, Trash2
+  Star, Ban, CheckCircle, History, ShieldAlert, UserPlus, Trash2, Repeat, Plus
 } from "lucide-react";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
 type AppRole = Database["public"]["Enums"]["app_role"];
 
@@ -388,71 +389,107 @@ export default function ClientDetailSheet({ clientId, open, onOpenChange, onClie
               </>
             )}
 
-            {/* Role Management */}
+            {/* Role Management — compact */}
             <Separator />
-            <div className="space-y-3">
-              <p className="text-sm font-bold text-foreground flex items-center gap-2">
-                <UserPlus className="w-4 h-4 text-primary" /> إدارة الأدوار والصلاحيات
-              </p>
-              
-              {/* Current Roles */}
-              <div className="flex flex-wrap gap-2">
+            <div className="space-y-2">
+              <div className="flex items-center justify-between">
+                <p className="text-sm font-bold text-foreground flex items-center gap-2">
+                  <UserPlus className="w-4 h-4 text-primary" /> الأدوار والصلاحيات
+                </p>
+                <span className="text-[10px] text-muted-foreground">{roles.length} دور</span>
+              </div>
+
+              {/* Current Roles - chips */}
+              <div className="flex flex-wrap gap-1.5">
+                {roles.length === 0 && <span className="text-xs text-muted-foreground">لا يوجد</span>}
                 {roles.map(role => {
                   const info = ALL_ROLES.find(r => r.key === role);
                   return (
-                    <Badge key={role} variant="secondary" className="text-xs flex items-center gap-1 pr-1">
+                    <Badge key={role} variant="secondary" className="text-[11px] flex items-center gap-1 pr-1.5 py-0.5 h-6">
                       <span>{info?.icon} {info?.label || role}</span>
                       {role !== "user" && (
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          className="h-4 w-4 p-0 hover:bg-destructive/20 rounded-full ml-1"
+                        <button
+                          type="button"
+                          className="h-4 w-4 inline-flex items-center justify-center rounded-full hover:bg-destructive/20"
                           onClick={async () => {
                             const { error } = await supabase.from("user_roles").delete().eq("user_id", clientId!).eq("role", role as AppRole);
                             if (error) { toast({ title: "خطأ", description: error.message, variant: "destructive" }); return; }
                             setRoles(prev => prev.filter(r => r !== role));
-                            toast({ title: `تم إزالة دور "${info?.label || role}"` });
+                            toast({ title: `تم إزالة "${info?.label || role}"` });
                             onClientUpdated?.();
                           }}
                         >
-                          <Trash2 className="w-3 h-3 text-destructive" />
-                        </Button>
+                          <Trash2 className="w-2.5 h-2.5 text-destructive" />
+                        </button>
                       )}
                     </Badge>
                   );
                 })}
               </div>
 
-              {/* Add Role Buttons */}
-              <div className="grid grid-cols-2 gap-2">
-                {ALL_ROLES.filter(r => !roles.includes(r.key)).map(r => (
-                  <Button
-                    key={r.key}
-                    variant="outline"
-                    size="sm"
-                    className="text-xs justify-start gap-2 h-9"
-                    onClick={async () => {
-                      const { error } = await supabase.from("user_roles").insert({ user_id: clientId!, role: r.key });
-                      if (error) { toast({ title: "خطأ", description: error.message, variant: "destructive" }); return; }
-                      // Auto-create driver record if needed
-                      if (r.key === "driver" || r.key === "delivery") {
-                        const { data: ex } = await supabase.from("drivers").select("id").eq("user_id", clientId!).maybeSingle();
-                        if (!ex) {
-                          await supabase.from("drivers").insert({
-                            user_id: clientId!,
-                            status: "inactive",
-                            driver_type: r.key === "delivery" ? "delivery" : "ride",
-                          });
-                        }
-                      }
-                      setRoles(prev => [...prev, r.key]);
-                      toast({ title: `✅ تم تعيين كـ "${r.label}"` });
-                      onClientUpdated?.();
-                    }}
-                  >
-                    <span>{r.icon}</span> تعيين كـ {r.label}
-                  </Button>
-                ))}
+              {/* Quick actions: Change role + Add role (compact selects) */}
+              <div className="grid grid-cols-2 gap-2 pt-1">
+                {/* Change role: replace existing with another */}
+                <Select
+                  onValueChange={async (newRole) => {
+                    if (!clientId) return;
+                    const [fromRole, toRole] = newRole.split("→");
+                    if (!fromRole || !toRole) return;
+                    const { error: dErr } = await supabase.from("user_roles").delete().eq("user_id", clientId).eq("role", fromRole as AppRole);
+                    if (dErr) { toast({ title: "خطأ", description: dErr.message, variant: "destructive" }); return; }
+                    const { error: iErr } = await supabase.from("user_roles").insert({ user_id: clientId, role: toRole as AppRole });
+                    if (iErr) { toast({ title: "خطأ", description: iErr.message, variant: "destructive" }); return; }
+                    if (toRole === "driver" || toRole === "delivery") {
+                      const { data: ex } = await supabase.from("drivers").select("id").eq("user_id", clientId).maybeSingle();
+                      if (!ex) await supabase.from("drivers").insert({ user_id: clientId, status: "inactive", driver_type: toRole === "delivery" ? "delivery" : "ride" });
+                    }
+                    setRoles(prev => [...prev.filter(r => r !== fromRole), toRole]);
+                    toast({ title: `🔁 تم تغيير الدور` });
+                    onClientUpdated?.();
+                  }}
+                >
+                  <SelectTrigger className="h-9 text-xs bg-secondary/40">
+                    <Repeat className="w-3.5 h-3.5 ml-1" />
+                    <SelectValue placeholder="تغيير دور" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {roles.flatMap(from =>
+                      ALL_ROLES.filter(t => t.key !== from && !roles.includes(t.key)).map(t => (
+                        <SelectItem key={`${from}→${t.key}`} value={`${from}→${t.key}`} className="text-xs">
+                          {ALL_ROLES.find(r => r.key === from)?.icon} {ALL_ROLES.find(r => r.key === from)?.label} → {t.icon} {t.label}
+                        </SelectItem>
+                      ))
+                    )}
+                  </SelectContent>
+                </Select>
+
+                {/* Add role */}
+                <Select
+                  onValueChange={async (key) => {
+                    if (!clientId) return;
+                    const { error } = await supabase.from("user_roles").insert({ user_id: clientId, role: key as AppRole });
+                    if (error) { toast({ title: "خطأ", description: error.message, variant: "destructive" }); return; }
+                    if (key === "driver" || key === "delivery") {
+                      const { data: ex } = await supabase.from("drivers").select("id").eq("user_id", clientId).maybeSingle();
+                      if (!ex) await supabase.from("drivers").insert({ user_id: clientId, status: "inactive", driver_type: key === "delivery" ? "delivery" : "ride" });
+                    }
+                    setRoles(prev => [...prev, key]);
+                    toast({ title: `✅ تم تعيين الدور` });
+                    onClientUpdated?.();
+                  }}
+                >
+                  <SelectTrigger className="h-9 text-xs bg-secondary/40">
+                    <Plus className="w-3.5 h-3.5 ml-1" />
+                    <SelectValue placeholder="إضافة دور" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {ALL_ROLES.filter(r => !roles.includes(r.key)).map(r => (
+                      <SelectItem key={r.key} value={r.key} className="text-xs">
+                        {r.icon} {r.label}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
               </div>
             </div>
           </div>
