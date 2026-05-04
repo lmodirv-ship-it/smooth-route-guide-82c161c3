@@ -1,7 +1,12 @@
 import { useEffect, useRef, useState, useCallback } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Camera, CameraOff, Eye } from "lucide-react";
-import * as faceapi from "face-api.js";
+type FaceApi = typeof import("face-api.js");
+let faceapiPromise: Promise<FaceApi> | null = null;
+const loadFaceApi = () => {
+  if (!faceapiPromise) faceapiPromise = import("face-api.js");
+  return faceapiPromise;
+};
 
 /**
  * Compact face-based presence tracker for header bar.
@@ -19,15 +24,18 @@ const AgentFacePresence = () => {
   const timerRef = useRef<NodeJS.Timeout | null>(null);
   const streamRef = useRef<MediaStream | null>(null);
 
-  // Load face-api models
-  useEffect(() => {
-    const loadModels = async () => {
-      const MODEL_URL = "https://cdn.jsdelivr.net/npm/@vladmandic/face-api/model";
-      await faceapi.nets.tinyFaceDetector.loadFromUri(MODEL_URL);
-      setModelsLoaded(true);
-    };
-    loadModels();
-  }, []);
+  const faceapiRef = useRef<FaceApi | null>(null);
+
+  // Lazy-load face-api models only when camera is toggled on
+  const ensureModels = useCallback(async () => {
+    if (modelsLoaded) return faceapiRef.current!;
+    const faceapi = await loadFaceApi();
+    faceapiRef.current = faceapi;
+    const MODEL_URL = "https://cdn.jsdelivr.net/npm/@vladmandic/face-api/model";
+    await faceapi.nets.tinyFaceDetector.loadFromUri(MODEL_URL);
+    setModelsLoaded(true);
+    return faceapi;
+  }, [modelsLoaded]);
 
   const startPresenceInterval = useCallback(async () => {
     const { data: { user } } = await supabase.auth.getUser();
@@ -72,22 +80,24 @@ const AgentFacePresence = () => {
     setFaceDetected(false);
   }, [endPresenceInterval]);
 
-  const toggleCamera = useCallback(() => {
+  const toggleCamera = useCallback(async () => {
     if (cameraActive) {
       stopCamera();
       setShowVideo(false);
     } else {
       setShowVideo(true);
-      if (modelsLoaded) startCamera();
+      await ensureModels();
+      startCamera();
     }
-  }, [cameraActive, modelsLoaded, startCamera, stopCamera]);
+  }, [cameraActive, ensureModels, startCamera, stopCamera]);
 
   // Face detection loop
   useEffect(() => {
     if (!cameraActive || !modelsLoaded) return;
 
     const detect = async () => {
-      if (!videoRef.current) return;
+      if (!videoRef.current || !faceapiRef.current) return;
+      const faceapi = faceapiRef.current;
       const result = await faceapi.detectSingleFace(videoRef.current, new faceapi.TinyFaceDetectorOptions({ scoreThreshold: 0.5 }));
       const detected = !!result;
       
