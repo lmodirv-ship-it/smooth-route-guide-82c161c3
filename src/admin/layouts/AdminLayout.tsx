@@ -118,6 +118,8 @@ const AdminLayout = () => {
     { path: "/admin/partner-sites", icon: Monitor, label: "🌐 المواقع الشريكة" },
     { path: "/admin/analytics", icon: BarChart3, label: "تحليلات الزوار" },
     { path: "/admin/growth", icon: BarChart3, label: "📈 تحليلات النمو" },
+    { path: "/admin/campaigns", icon: BarChart3, label: "🎯 حملات التسويق" },
+    { path: "/admin/utm-builder", icon: BarChart3, label: "🔗 صانع روابط UTM" },
     { path: "/admin/versions", icon: GitBranch, label: "إدارة الإصدارات" },
     { path: "/admin/settings", icon: Settings, label: t.admin.settingsMenu },
     { path: "/admin/pages", icon: FileText, label: "إدارة الصفحات" },
