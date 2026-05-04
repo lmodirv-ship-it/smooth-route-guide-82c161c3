@@ -48,6 +48,8 @@ import Prospecting from "@/admin/pages/Prospecting";
 import MailBlusterTemplates from "@/admin/pages/MailBlusterTemplates";
 import ApiKeysPage from "@/admin/pages/ApiKeys";
 import PartnerSitesManagement from "@/admin/pages/PartnerSitesManagement";
+import UtmBuilder from "@/admin/pages/UtmBuilder";
+import CampaignsDashboard from "@/admin/pages/CampaignsDashboard";
 
 // Supervisor layout & pages
 import SupervisorLayout from "@/admin/layouts/SupervisorLayout";
