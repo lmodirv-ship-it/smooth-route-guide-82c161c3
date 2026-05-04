@@ -526,7 +526,7 @@ export default function LandingPage() {
       {/* ─── Promo Images Section ─── */}
       <HeroPromoFlash />
 
-      {/* ─── Partner Sites / Lovable Projects Showcase ─── */}
+      {/* ─── Partner Sites / Groupe-HN Projects Showcase ─── */}
       <section className="py-20 md:py-28 relative overflow-hidden">
         <div className="absolute inset-0 bg-gradient-to-b from-background via-secondary/10 to-background" />
         <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-primary/20 to-transparent" />
@@ -1024,13 +1024,13 @@ export default function LandingPage() {
         </div>
       </section>
 
-      {/* ─── Projects on Lovable ─── */}
+      {/* ─── Projects on Groupe-HN ─── */}
       <section className="py-20 relative overflow-hidden">
         <div className="absolute inset-0 bg-gradient-to-b from-background via-card/20 to-background" />
         <div className="container mx-auto px-4 relative z-10">
           <motion.div initial="hidden" whileInView="visible" viewport={{ once: true }} variants={fadeUp} custom={0} className="text-center mb-14">
             <h2 className="text-3xl md:text-4xl font-bold font-display mb-3">
-              <span className="text-gradient-primary glow-text">مشاريعنا على Lovable</span>
+              <span className="text-gradient-primary glow-text">مشاريعنا على Groupe-HN</span>
             </h2>
             <p className="text-muted-foreground text-lg">مجموعة من المشاريع المبتكرة التي طورتها شركة HN للبرمجيات</p>
           </motion.div>
