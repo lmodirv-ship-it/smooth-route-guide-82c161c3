@@ -10,10 +10,20 @@ const PRESETS = {
 };
 
 const BASE_URLS = [
+  { label: "🎯 صفحة التسجيل (موصى بها للحملات)", value: "https://www.hn-driver.com/auth/client" },
   { label: "🌐 الموقع الرئيسي", value: "https://www.hn-driver.com" },
   { label: "🚗 صفحة السائقين", value: "https://www.hn-driver.com/driver" },
   { label: "📦 صفحة التوصيل", value: "https://www.hn-driver.com/delivery" },
   { label: "📱 تحميل التطبيق", value: "https://www.hn-driver.com/downloads" },
+];
+
+type Preset = { label: string; baseUrl: string; source: string; medium: string; campaign: string; content?: string };
+const QUICK_PRESETS: Preset[] = [
+  { label: "📘 فيسبوك — تسجيل 50د", baseUrl: "https://www.hn-driver.com/auth/client", source: "facebook", medium: "cpc", campaign: "signup_50dh", content: "fb_feed" },
+  { label: "📸 إنستغرام — تسجيل 50د", baseUrl: "https://www.hn-driver.com/auth/client", source: "instagram", medium: "cpc", campaign: "signup_50dh", content: "ig_story" },
+  { label: "🎵 تيك توك — تسجيل 50د", baseUrl: "https://www.hn-driver.com/auth/client", source: "tiktok", medium: "cpc", campaign: "signup_50dh", content: "tt_video" },
+  { label: "🔍 Google Ads — تسجيل", baseUrl: "https://www.hn-driver.com/auth/client", source: "google", medium: "cpc", campaign: "signup_50dh", content: "search_ads" },
+  { label: "💬 واتساب — تسجيل", baseUrl: "https://www.hn-driver.com/auth/client", source: "whatsapp", medium: "social", campaign: "signup_50dh", content: "wa_status" },
 ];
 
 const UtmBuilder = () => {
@@ -60,6 +70,30 @@ const UtmBuilder = () => {
         <p className="text-sm text-muted-foreground mt-1">
           أنشئ روابط مخصصة لكل حملة إعلانية لتتبع أدائها بدقة في تحليلات النمو
         </p>
+      </div>
+
+      {/* Quick Presets */}
+      <div className="glass-card rounded-2xl p-4">
+        <p className="text-sm font-bold text-foreground mb-2">⚡ قوالب جاهزة (اضغط لتعبئة الحقول)</p>
+        <div className="flex flex-wrap gap-2">
+          {QUICK_PRESETS.map((p) => (
+            <button
+              key={p.label}
+              type="button"
+              onClick={() => {
+                setBaseUrl(p.baseUrl);
+                setSource(p.source);
+                setMedium(p.medium);
+                setCampaign(p.campaign);
+                setContent(p.content || "");
+                toast.success(`تم تطبيق: ${p.label}`);
+              }}
+              className="text-xs px-3 py-1.5 rounded-full border border-primary/30 bg-primary/10 text-foreground hover:bg-primary/20 transition"
+            >
+              {p.label}
+            </button>
+          ))}
+        </div>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
