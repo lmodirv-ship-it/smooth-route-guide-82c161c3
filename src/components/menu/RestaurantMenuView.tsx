@@ -6,7 +6,8 @@ import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Badge } from "@/components/ui/badge";
 import { supabase } from "@/integrations/supabase/client";
-import { useCart } from "@/contexts/CartContext";
+import { useContext } from "react";
+import * as CartCtxModule from "@/contexts/CartContext";
 import { toast } from "@/hooks/use-toast";
 
 interface Props {
