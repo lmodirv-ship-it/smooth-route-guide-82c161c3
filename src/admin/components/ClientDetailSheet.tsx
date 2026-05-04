@@ -12,8 +12,9 @@ import type { Database } from "@/integrations/supabase/types";
 import {
   User, Phone, Mail, Calendar, Shield, Wallet, Car, MapPin,
   KeyRound, Save, Loader2, Eye, EyeOff, Copy, Check,
-  Star, Ban, CheckCircle, History, ShieldAlert, UserPlus, Trash2
+  Star, Ban, CheckCircle, History, ShieldAlert, UserPlus, Trash2, Repeat, Plus
 } from "lucide-react";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
 type AppRole = Database["public"]["Enums"]["app_role"];
 
