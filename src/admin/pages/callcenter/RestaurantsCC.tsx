@@ -51,10 +51,58 @@ const RestaurantsCC = () => {
   const [storeDialog, setStoreDialog] = useState(false);
   const [editingStore, setEditingStore] = useState<any>(null);
   const [storeForm, setStoreForm] = useState({
-    name: "", category: "restaurant", address: "", phone: "",
+    name: "", category: "restaurant", address: "", phone: "", email: "",
     delivery_time_min: 20, delivery_time_max: 40, is_open: true,
     description: "", delivery_fee: 10, min_order: 0, zone_id: "",
   });
+  const [bulkMenuProgress, setBulkMenuProgress] = useState<{ current: number; total: number } | null>(null);
+
+  const generateMenuForStore = async (store: any) => {
+    const { data, error } = await supabase.functions.invoke("generate-menu", {
+      body: { restaurantName: store.name, restaurantCategory: store.category || "restaurant", restaurantAddress: store.address || "" },
+    });
+    if (error) throw error;
+    const menu = data?.menu;
+    if (!menu?.categories?.length) throw new Error("AI returned empty menu");
+    let cats = 0, items = 0;
+    for (let i = 0; i < menu.categories.length; i++) {
+      const c = menu.categories[i];
+      const { data: catRow, error: catErr } = await supabase.from("menu_categories")
+        .insert({ store_id: store.id, name_ar: c.name_ar, name_fr: c.name_fr || c.name_ar, sort_order: i })
+        .select("id").single();
+      if (catErr) continue;
+      cats++;
+      const payload = (c.items || []).map((it: any, j: number) => ({
+        store_id: store.id, category_id: catRow.id, name_ar: it.name_ar, name_fr: it.name_fr || it.name_ar,
+        description_ar: it.description_ar || "", price: Number(it.price) || 0, is_available: true, sort_order: j,
+      }));
+      if (payload.length) {
+        const { error: itErr } = await supabase.from("menu_items").insert(payload);
+        if (!itErr) items += payload.length;
+      }
+    }
+    return { cats, items };
+  };
+
+  const generateMenusForAllEmpty = async () => {
+    const { data: allItems } = await supabase.from("menu_items").select("store_id");
+    const storesWithItems = new Set((allItems || []).map((i: any) => i.store_id));
+    const emptyStores = stores.filter((s) => !storesWithItems.has(s.id));
+    if (!emptyStores.length) { toast({ title: "✅ كل المطاعم لديها قوائم" }); return; }
+    if (!confirm(`سيتم توليد قوائم لـ ${emptyStores.length} مطعم. متابعة؟`)) return;
+    setBulkMenuProgress({ current: 0, total: emptyStores.length });
+    let ok = 0, fail = 0;
+    for (let i = 0; i < emptyStores.length; i++) {
+      setBulkMenuProgress({ current: i + 1, total: emptyStores.length });
+      try {
+        const { cats, items } = await generateMenuForStore(emptyStores[i]);
+        if (cats > 0 && items > 0) ok++; else fail++;
+      } catch { fail++; }
+    }
+    setBulkMenuProgress(null);
+    toast({ title: `✅ تم: ${ok} | ❌ فشل: ${fail}` });
+    fetchStores();
+  };
   const [storeImageFile, setStoreImageFile] = useState<File | null>(null);
   const [savingStore, setSavingStore] = useState(false);
 
@@ -160,14 +208,14 @@ const RestaurantsCC = () => {
       setEditingStore(store);
       setStoreForm({
         name: store.name, category: store.category, address: store.address || "",
-        phone: store.phone || "", delivery_time_min: store.delivery_time_min || 20,
+        phone: store.phone || "", email: store.email || "", delivery_time_min: store.delivery_time_min || 20,
         delivery_time_max: store.delivery_time_max || 40, is_open: store.is_open,
         description: store.description || "", delivery_fee: store.delivery_fee || 10,
         min_order: store.min_order || 0, zone_id: store.zone_id || "",
       });
     } else {
       setEditingStore(null);
-      setStoreForm({ name: "", category: "restaurant", address: "", phone: "", delivery_time_min: 20, delivery_time_max: 40, is_open: true, description: "", delivery_fee: 10, min_order: 0, zone_id: "" });
+      setStoreForm({ name: "", category: "restaurant", address: "", phone: "", email: "", delivery_time_min: 20, delivery_time_max: 40, is_open: true, description: "", delivery_fee: 10, min_order: 0, zone_id: "" });
     }
     setStoreImageFile(null);
     setStoreDialog(true);
@@ -331,6 +379,11 @@ const RestaurantsCC = () => {
             <Button onClick={saveGeneratedStores} disabled={savingGenerated || generatedStores.length === 0} className="gap-1 bg-blue-600 hover:bg-blue-700 text-white">
               {savingGenerated ? <Loader2 className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />} حفظ
             </Button>
+            <Button onClick={generateMenusForAllEmpty} disabled={!!bulkMenuProgress} className="gap-1 bg-purple-600 hover:bg-purple-700 text-white">
+              {bulkMenuProgress
+                ? <><Loader2 className="w-4 h-4 animate-spin" /> {bulkMenuProgress.current}/{bulkMenuProgress.total}</>
+                : <><Sparkles className="w-4 h-4" /> توليد قوائم الفارغة</>}
+            </Button>
             <Button onClick={() => openStoreForm()} className="gap-2 text-sm font-bold">
               <Plus className="w-5 h-5" /> إضافة مطعم
             </Button>
@@ -418,6 +471,7 @@ const RestaurantsCC = () => {
                   <TableHead className="text-right">الرقم</TableHead>
                   <TableHead className="text-right">الاسم</TableHead>
                   <TableHead className="text-right">الهاتف</TableHead>
+                  <TableHead className="text-right">Email</TableHead>
                   <TableHead className="text-right">العنوان</TableHead>
                   <TableHead className="text-right">المدينة</TableHead>
                   <TableHead className="text-right">البلد</TableHead>
@@ -430,13 +484,14 @@ const RestaurantsCC = () => {
               <TableBody>
                 {filtered.length === 0 ? (
                   <TableRow>
-                    <TableCell colSpan={10} className="text-center py-10 text-muted-foreground">لا توجد مطاعم</TableCell>
+                    <TableCell colSpan={11} className="text-center py-10 text-muted-foreground">لا توجد مطاعم</TableCell>
                   </TableRow>
                 ) : pageItems.map((store) => (
                   <TableRow key={store.id} className="hover:bg-secondary/30">
                     <TableCell className="font-mono text-sm font-bold">{store.store_code || "—"}</TableCell>
                     <TableCell className="font-bold">{store.name}</TableCell>
                     <TableCell className="text-muted-foreground text-sm" dir="ltr">{store.phone || "—"}</TableCell>
+                    <TableCell className="text-muted-foreground text-xs" dir="ltr">{store.email || "—"}</TableCell>
                     <TableCell className="text-muted-foreground text-sm">{store.address || "—"}</TableCell>
                     <TableCell className="text-sm">{store.city || "—"}</TableCell>
                     <TableCell className="text-sm">{store.country || "—"}</TableCell>
@@ -519,6 +574,10 @@ const RestaurantsCC = () => {
               <div>
                 <Label className="text-xs text-muted-foreground">رقم الهاتف</Label>
                 <Input value={storeForm.phone} onChange={e => setStoreForm(p => ({ ...p, phone: e.target.value }))} className="bg-secondary/60 border-border mt-1" />
+              </div>
+              <div>
+                <Label className="text-xs text-muted-foreground">Email</Label>
+                <Input type="email" value={storeForm.email} onChange={e => setStoreForm(p => ({ ...p, email: e.target.value }))} className="bg-secondary/60 border-border mt-1" />
               </div>
               <div className="grid grid-cols-2 gap-3">
                 <div>
