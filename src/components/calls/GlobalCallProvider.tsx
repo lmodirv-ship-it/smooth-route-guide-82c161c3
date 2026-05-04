@@ -1,18 +1,13 @@
 /**
- * GlobalCallProvider — mounts the in-app call hook + dialog at the app root,
- * so incoming WebRTC calls are received on EVERY page (not only those that
- * happen to render <FloatingChatButton /> or a tracking screen).
- *
- * This fixes the "calls don't ring" bug: previously the receiver only
- * registered the realtime listeners while inside specific pages.
+ * GlobalCallDialog — renders the in-app call dialog at the app root using
+ * the shared CallContext. Must be inside <CallProvider>.
  */
-import { useInAppCall } from "@/hooks/useInAppCall";
+import { useCall } from "@/contexts/CallContext";
 import InAppCallDialog from "@/components/calls/InAppCallDialog";
 
 export default function GlobalCallProvider() {
-  const call = useInAppCall();
+  const call = useCall();
 
-  // Render dialog only when a call is in progress to avoid extra DOM cost
   if (!call.userId) return null;
 
   return (
