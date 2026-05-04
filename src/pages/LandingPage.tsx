@@ -15,6 +15,9 @@ import {
 } from "lucide-react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
+import { lovable } from "@/integrations/lovable/index";
+import { toast } from "@/hooks/use-toast";
+import { trackEvent } from "@/components/TrackingScripts";
 import CinematicParticles from "@/components/CinematicParticles";
 import GlobalContactFooter from "@/components/GlobalContactFooter";
 import AdsSection from "@/components/AdsSection";
