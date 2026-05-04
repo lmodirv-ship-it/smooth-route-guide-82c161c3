@@ -175,15 +175,26 @@ const AdminRestaurants = () => {
       if (autoMenu && inserted?.length) {
         toast({ title: `🍽️ توليد القوائم لـ ${inserted.length} مطعم...` });
         let okCount = 0;
+        let lastError = "";
         for (const st of inserted) {
           try {
-            await generateMenuForStore(st);
-            okCount++;
-          } catch (e) {
+            const { cats, items } = await generateMenuForStore(st);
+            if (cats > 0 && items > 0) okCount++;
+            else lastError = `لم يتم إدراج أي عناصر لـ ${st.name}`;
+          } catch (e: any) {
+            lastError = e?.message || String(e);
             console.error("auto menu failed for", st.name, e);
           }
         }
-        toast({ title: `✅ تم توليد قوائم ${okCount}/${inserted.length} مطعم` });
+        if (okCount === inserted.length) {
+          toast({ title: `✅ تم توليد قوائم ${okCount}/${inserted.length} مطعم` });
+        } else {
+          toast({
+            title: `⚠️ توليد القوائم: ${okCount}/${inserted.length}`,
+            description: lastError || "بعض القوائم فشلت",
+            variant: "destructive",
+          });
+        }
       }
 
       setGeneratedStores([]);
