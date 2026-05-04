@@ -68,7 +68,7 @@ export default function CancelRideDialog({ open, onOpenChange, rideId, role, onC
 
   return (
     <AlertDialog open={open} onOpenChange={onOpenChange}>
-      <AlertDialogContent className="max-w-sm rounded-2xl" dir="rtl">
+      <AlertDialogContent className="max-w-sm rounded-2xl z-[2000]" dir="rtl">
         <AlertDialogHeader>
           <AlertDialogTitle className="flex items-center gap-2 text-destructive">
             <XCircle className="w-5 h-5" />
