@@ -415,6 +415,7 @@ const AdminRestaurants = () => {
                       <TableHead>{tr.code}</TableHead>
                       <TableHead>{tr.name}</TableHead>
                       <TableHead>{tr.phone}</TableHead>
+                      <TableHead>Email</TableHead>
                       <TableHead>{tr.address}</TableHead>
                       <TableHead>المدينة</TableHead>
                       <TableHead>البلد</TableHead>
