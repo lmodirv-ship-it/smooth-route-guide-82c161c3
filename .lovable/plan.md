@@ -1,73 +1,60 @@
-# إتاحة قائمة المطعم للجميع (زبون / أدمن / مركز اتصال)
 
-## الوضع الحالي
-- **الصفحة موجودة فقط للزبون**: `RestaurantMenu` تعرض على المسار `/delivery/restaurant/:id` ضمن `MainRoutes`.
-- **قاعدة البيانات جاهزة بالفعل**: تحققت من سياسات RLS — الأدمن، Agent (مركز الاتصال)، Moderator، و Smart Assistant لديهم بالفعل صلاحية SELECT على `stores`, `menu_categories`, `menu_items`. **لا حاجة لأي تعديل على قاعدة البيانات**.
-- **زر السلة موجود في الهيدر**: غير مناسب للأدمن/الوكيل لأنهم لن يطلبوا.
+## الهدف
+زيادة التحويل من "زائر" إلى "مسجّل" عبر إزالة العوائق:
+1. **Google ضغطة واحدة** متاح مباشرة من الصفحة الرئيسية (لا من داخل `/auth/client` فقط).
+2. **رابط UTM جاهز** يصل بالزائر مباشرة إلى صفحة التسجيل مع تتبع المصدر.
 
-## الخطة
+---
 
-### 1. استخراج مكوّن قابل للمشاركة
-استخراج عرض القائمة من `src/pages/delivery/RestaurantMenu.tsx` إلى مكون قابل لإعادة الاستخدام:
+## التغييرات
 
-**ملف جديد**: `src/components/menu/RestaurantMenuView.tsx`
-- يستقبل `props`: `storeId`, `mode: "customer" | "readonly"`
-- في وضع `readonly` (للأدمن/مركز الاتصال):
-  - إخفاء أزرار "أضف / +/-"
-  - إخفاء شريط السلة السفلي
-  - إخفاء أيقونة السلة في الهيدر
-  - إظهار بدلاً منها شارة "عرض فقط" + معلومات إضافية للإدارة (عدد الفئات، عدد الأطباق، آخر تحديث)
-- في وضع `customer`: السلوك الحالي بالكامل دون تغيير
+### 1. زر "تسجيل بـ Google" في الـ Hero بالصفحة الرئيسية
+**الملف:** `src/pages/LandingPage.tsx` (داخل قسم Hero، تحت `VideoShowcaseSection`)
 
-`RestaurantMenu.tsx` يصبح غلافاً بسيطاً يستدعي `<RestaurantMenuView mode="customer" />`.
+إضافة بطاقة CTA بارزة قبل بطاقات الأدوار:
+- زر أخضر/ذهبي كبير: **"🎉 سجّل بضغطة واحدة عبر Google — احصل على 50 درهم مجاناً"**
+- يستدعي `lovable.auth.signInWithOAuth("google", { redirect_uri: window.location.origin })` مباشرة
+- تتبّع `trackEvent("signup_google_oneclick_landing")` للقياس
+- زر صغير ثانوي: "تسجيل بالبريد الإلكتروني" → `navigate("/auth/client")`
 
-### 2. إضافة المسار للأدمن
-**ملف جديد**: `src/admin/pages/AdminRestaurantMenu.tsx`
-- يحضر `storeId` من URL params
-- يلف العرض بـ `AdminLayout` ويستخدم `<RestaurantMenuView mode="readonly" />`
+### 2. تثبيت زر "Google" في الشريط العلوي (Desktop + Mobile)
+بدل/بجانب زر "🎉 سجّل مجاناً" الحالي → زر Google مباشر بنفس المنطق، حتى الزائر الذي لا يمرّر للأسفل يراه.
 
-**تعديل `src/admin/AdminRoutes.tsx`**:
-- إضافة Route مع Lazy: `/admin/restaurants/:id/menu` → `AdminRestaurantMenu`
+### 3. منطق ما بعد Google OAuth (مهم)
+بعد عودة المستخدم من Google، `AuthPage` يتعامل مع الجلسة عبر `useAuthReady` ويوجّه للوحة المناسبة. 
+سنضيف في `LandingPage` كود `useEffect` خفيف: إذا كانت هناك جلسة نشطة (عودة من OAuth)، نعيد التوجيه إلى `/customer` تلقائياً.
 
-**تعديل صفحة قائمة المطاعم في الأدمن** (إذا موجودة):
-- إضافة زر "عرض القائمة" بجانب كل مطعم → ينقل إلى `/admin/restaurants/:id/menu`
+### 4. صفحة "صانع روابط UTM" — توليد رابط جاهز للحملة
+**الملف:** `src/admin/pages/UtmBuilder.tsx` (موجود مسبقاً)
 
-### 3. إضافة المسار لمركز الاتصال
-**ملف جديد**: `src/admin/pages/callcenter/CCRestaurantMenu.tsx`
-- نفس الفكرة، يلف العرض بـ `CallCenterLayout` + `<RestaurantMenuView mode="readonly" />`
+التحقق أنه يولّد روابط بصيغة:
+```
+https://www.hn-driver.com/auth/client?utm_source=facebook&utm_medium=cpc&utm_campaign=signup_50dh
+```
+وأن `VisitorCounter` (الذي يستدعي `record_visit`) يلتقط هذه الـ UTMs (مؤكد أنه يفعل).
 
-**تعديل `src/admin/AdminRoutes.tsx`** (نفس الملف يحوي مسارات CC):
-- إضافة Route: `/cc/restaurants/:id/menu`
+سنضيف **قالب جاهز** بزر واحد في `UtmBuilder`: 
+- "📱 حملة فيسبوك للتسجيل" → ينسخ رابط `/auth/client` مع UTM معبّأة مسبقاً
+- "📱 حملة إنستغرام للتسجيل"
+- "📱 حملة Google Ads"
 
-**تعديل لوحة مركز الاتصال** (`CCDashboard` أو شاشة الطلبات):
-- عند عرض طلب توصيل، إضافة زر صغير "عرض قائمة المطعم" بجانب اسم المطعم → نافذة منبثقة `Dialog` أو روابط لـ `/cc/restaurants/:id/menu`.
-- هذا يساعد الوكيل على تأكيد الطلبات ومراجعة الأسعار مع الزبون عبر الهاتف.
+---
 
-### 4. ترجمة العناصر الجديدة
-إضافة المفاتيح في `platform_translations` (وفق سياسة i18n الصارمة):
-- `menu.viewOnly` — "عرض فقط"
-- `menu.openInAdmin` — "عرض القائمة"
-- `menu.totalCategories`, `menu.totalItems`, `menu.lastUpdated`
+## القياس
+بعد التطبيق، سنتمكن من قراءة في `/admin/campaigns`:
+- زيارات `/auth/client` (ستكون > 0 لأول مرة)
+- معدل التحويل لكل قناة UTM
+- نقرات زر Google في `site_visits` (عبر `trackEvent`)
 
-## ما لن يتغير
-- التصميم البصري للقائمة كما يراها الزبون **يبقى كما هو 100%** (وفق UI Lockdown).
-- لا تعديل على قاعدة البيانات (RLS كافية).
-- لا تعديل على `CartContext` — ببساطة لن يُستدعى في وضع readonly.
+---
 
 ## الملفات المتأثرة
+- `src/pages/LandingPage.tsx` — إضافة CTA Google في Hero والشريط
+- `src/admin/pages/UtmBuilder.tsx` — قوالب UTM جاهزة لصفحة `/auth/client`
 
-```text
-+ src/components/menu/RestaurantMenuView.tsx        (جديد - استخراج المنطق)
-~ src/pages/delivery/RestaurantMenu.tsx              (يصبح غلاف صغير)
-+ src/admin/pages/AdminRestaurantMenu.tsx            (جديد)
-+ src/admin/pages/callcenter/CCRestaurantMenu.tsx    (جديد)
-~ src/admin/AdminRoutes.tsx                          (إضافة مسارين Lazy)
-~ صفحة قائمة المطاعم في الأدمن                       (زر "عرض القائمة")
-~ CCDashboard أو شاشة الطلبات                        (زر "عرض قائمة المطعم")
-~ src/i18n/locales/ar.ts, fr.ts, en.ts, es.ts        (مفاتيح جديدة)
-```
+لا تغييرات في قاعدة البيانات. لا حاجة لمفاتيح جديدة (Google OAuth مُدار من Lovable Cloud).
 
-## النتيجة
-- **الزبون**: نفس التجربة الحالية (سلة، إضافة، إلخ).
-- **الأدمن**: يفتح أي مطعم ويرى قائمته كاملة في وضع قراءة فقط للمراجعة والإشراف.
-- **مركز الاتصال**: يفتح القائمة من شاشة الطلب لمساعدة الزبون عبر الهاتف.
+---
+
+## الحرس على الـ UI Lockdown
+هذا تعديل **مطلوب صراحة من المستخدم** (لتقليل الاحتكاك)، لذا يندرج تحت الاستثناء المسموح به.
