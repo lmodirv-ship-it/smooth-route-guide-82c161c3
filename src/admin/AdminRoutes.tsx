@@ -48,6 +48,8 @@ import Prospecting from "@/admin/pages/Prospecting";
 import MailBlusterTemplates from "@/admin/pages/MailBlusterTemplates";
 import ApiKeysPage from "@/admin/pages/ApiKeys";
 import PartnerSitesManagement from "@/admin/pages/PartnerSitesManagement";
+import UtmBuilder from "@/admin/pages/UtmBuilder";
+import CampaignsDashboard from "@/admin/pages/CampaignsDashboard";
 
 // Supervisor layout & pages
 import SupervisorLayout from "@/admin/layouts/SupervisorLayout";
@@ -113,6 +115,8 @@ export const adminRouteElements = (
       <Route path="ads" element={<AdsManagement />} />
       <Route path="analytics" element={<VisitorAnalytics />} />
       <Route path="growth" element={<GrowthAnalytics />} />
+      <Route path="utm-builder" element={<UtmBuilder />} />
+      <Route path="campaigns" element={<CampaignsDashboard />} />
       <Route path="versions" element={<VersionManager />} />
       <Route path="settings" element={<AdminSettings />} />
       <Route path="pages" element={<PageManagement />} />
