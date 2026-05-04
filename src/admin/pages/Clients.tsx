@@ -435,6 +435,27 @@ const AdminClients = () => {
         onOpenChange={setSheetOpen}
         onClientUpdated={fetchClients}
       />
+
+      <AlertDialog open={!!deleteTarget} onOpenChange={(o) => !o && setDeleteTarget(null)}>
+        <AlertDialogContent dir="rtl">
+          <AlertDialogHeader>
+            <AlertDialogTitle>حذف العميل نهائياً؟</AlertDialogTitle>
+            <AlertDialogDescription>
+              سيتم حذف <strong>{deleteTarget?.name || deleteTarget?.email}</strong> وجميع بياناته من النظام. هذا الإجراء لا يمكن التراجع عنه.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel disabled={deleting}>إلغاء</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={(e) => { e.preventDefault(); handleDelete(); }}
+              disabled={deleting}
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+            >
+              {deleting ? <><Loader2 className="w-4 h-4 ml-1 animate-spin" />جاري الحذف...</> : "نعم، احذف"}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 };
