@@ -22,6 +22,20 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
 
+            <!-- ═══ Deep Links — open https://*/... inside the app ═══ -->
+            <intent-filter android:autoVerify="true">
+                <action android:name="android.intent.action.VIEW" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.BROWSABLE" />
+                <data android:scheme="https" />
+                <data android:host="hndriver.company" />
+                <data android:host="www.hndriver.company" />
+                <data android:host="www.hn-driver.com" />
+                <data android:host="hn-driver.com" />
+                <data android:host="www.hn-driver.net" />
+                <data android:host="hn-driver.net" />
+            </intent-filter>
+
         </activity>
 
         <provider
