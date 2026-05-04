@@ -37,6 +37,8 @@ const RestaurantsCC = () => {
   const [zones, setZones] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
+  const [page, setPage] = useState(1);
+  const PAGE_SIZE = 25;
   const [selectedStore, setSelectedStore] = useState<any>(null);
   const [generatedStores, setGeneratedStores] = useState<any[]>([]);
   const [generating, setGenerating] = useState(false);
@@ -257,6 +259,9 @@ const RestaurantsCC = () => {
     s.name?.toLowerCase().includes(search.toLowerCase()) ||
     (s.address || "").toLowerCase().includes(search.toLowerCase())
   );
+  const totalPages = Math.max(1, Math.ceil(filtered.length / PAGE_SIZE));
+  const pageItems = filtered.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE);
+  useEffect(() => { setPage(1); }, [search]);
 
   const generateRestaurants = async () => {
     if (selectedCountry === "all") {
@@ -427,7 +432,7 @@ const RestaurantsCC = () => {
                   <TableRow>
                     <TableCell colSpan={10} className="text-center py-10 text-muted-foreground">لا توجد مطاعم</TableCell>
                   </TableRow>
-                ) : filtered.map((store) => (
+                ) : pageItems.map((store) => (
                   <TableRow key={store.id} className="hover:bg-secondary/30">
                     <TableCell className="font-mono text-sm font-bold">{store.store_code || "—"}</TableCell>
                     <TableCell className="font-bold">{store.name}</TableCell>
@@ -444,11 +449,11 @@ const RestaurantsCC = () => {
                     </TableCell>
                     <TableCell className="text-center">
                       <div className="flex items-center justify-center gap-1">
-                        <Button size="sm" variant="outline" className="h-7 text-[11px] gap-1 border-primary/30 text-primary" onClick={() => enterStore(store)}>
-                          <FolderOpen className="w-3 h-3" />القائمة
+                        <Button size="sm" variant="outline" className="h-8 text-xs gap-1 border-primary/30 text-primary" onClick={() => enterStore(store)}>
+                          <FolderOpen className="w-3.5 h-3.5" />القائمة
                         </Button>
-                        <Button size="sm" variant="outline" className="h-7 text-[11px] gap-1 border-info/30 text-info" onClick={() => openStoreForm(store)}>
-                          <Edit className="w-3 h-3" />تعديل
+                        <Button size="sm" variant="outline" className="h-8 text-xs gap-1 border-info/30 text-info" onClick={() => openStoreForm(store)}>
+                          <Edit className="w-3.5 h-3.5" />تعديل
                         </Button>
                       </div>
                     </TableCell>
@@ -456,6 +461,18 @@ const RestaurantsCC = () => {
                 ))}
               </TableBody>
             </Table>
+            {filtered.length > PAGE_SIZE && (
+              <div className="flex items-center justify-between p-3 border-t border-border bg-secondary/20">
+                <span className="text-xs text-muted-foreground">
+                  عرض {(page - 1) * PAGE_SIZE + 1}-{Math.min(page * PAGE_SIZE, filtered.length)} من {filtered.length}
+                </span>
+                <div className="flex items-center gap-2">
+                  <Button size="sm" variant="outline" disabled={page === 1} onClick={() => setPage(p => Math.max(1, p - 1))}>السابق</Button>
+                  <span className="text-xs">{page} / {totalPages}</span>
+                  <Button size="sm" variant="outline" disabled={page >= totalPages} onClick={() => setPage(p => Math.min(totalPages, p + 1))}>التالي</Button>
+                </div>
+              </div>
+            )}
           </div>
         )}
         {/* Store Dialog */}
