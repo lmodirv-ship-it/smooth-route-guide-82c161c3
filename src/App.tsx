@@ -46,6 +46,7 @@ const AppInner = () => {
         {adminRouteElements}
       </Routes>
       <HNChatbot />
+      <GlobalCallProvider />
     </BrowserRouter>
   );
 };
