@@ -42,12 +42,12 @@ const LaunchPromoBanner = () => {
                 </span>
               </div>
               <h2 className="text-xl md:text-2xl font-extrabold text-foreground leading-tight">
-                أول رحلة <span className="text-primary">مجانية</span> + اكسب{" "}
-                <span className="text-info">20 درهم</span> مع كل صديق يسجل
+                المنصة <span className="text-primary">مجانية بالكامل</span> لمدة{" "}
+                <span className="text-info">شهرين</span> 🎉
               </h2>
               <p className="text-sm text-muted-foreground mt-2 leading-relaxed">
-                ابدأ الآن واحصل على 50 درهم رصيد ترحيبي + رحلة مجانية. كل صديق
-                يسجل عبر رابطك = 20 درهم لك و20 درهم له.
+                بدون عمولات، بدون اشتراكات، بدون رسوم. سجّل الآن واستمتع بكل
+                خدمات HN Driver مجاناً لمدة 60 يوماً كاملة.
               </p>
             </div>
           </div>
