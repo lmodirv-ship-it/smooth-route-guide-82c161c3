@@ -154,9 +154,25 @@ const AdminRestaurants = () => {
         store_code: r.store_code || generateStoreCode(),
         is_confirmed: false,
       }));
-      const { error } = await supabase.from("stores").insert(toInsert);
+      const { data: inserted, error } = await supabase.from("stores").insert(toInsert).select("*");
       if (error) throw error;
       toast({ title: `✅ ${tr.saved.replace("{count}", String(toInsert.length))}` });
+
+      // Auto-generate menus for newly inserted stores
+      if (autoMenu && inserted?.length) {
+        toast({ title: `🍽️ توليد القوائم لـ ${inserted.length} مطعم...` });
+        let okCount = 0;
+        for (const st of inserted) {
+          try {
+            await generateMenuForStore(st);
+            okCount++;
+          } catch (e) {
+            console.error("auto menu failed for", st.name, e);
+          }
+        }
+        toast({ title: `✅ تم توليد قوائم ${okCount}/${inserted.length} مطعم` });
+      }
+
       setGeneratedStores([]);
       fetchAll();
     } catch (err: any) {
