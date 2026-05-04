@@ -64,22 +64,30 @@ const DriverPackages = () => {
   useEffect(() => { fetchData(); }, []);
 
   const handleSave = async () => {
-    if (!form.name_ar || form.price < 0) {
-      toast({ title: "خطأ", description: "يرجى ملء الاسم العربي والسعر (يمكن أن يكون 0 للباقات المجانية)", variant: "destructive" });
+    // Only Arabic name is required — price can be 0 (free packages)
+    if (!form.name_ar?.trim()) {
+      toast({ title: "الاسم العربي مطلوب", variant: "destructive" });
       return;
     }
     const payload = {
       ...form,
+      name_ar: form.name_ar.trim(),
+      name_fr: form.name_fr?.trim() || form.name_ar.trim(),
+      name_en: form.name_en?.trim() || form.name_ar.trim(),
+      price: Math.max(0, Number(form.price) || 0),
+      duration_days: Math.max(1, Number(form.duration_days) || 30),
       original_price: form.original_price > 0 ? form.original_price : null,
     };
 
-    if (editing) {
-      await supabase.from("driver_packages").update(payload).eq("id", editing.id);
-      toast({ title: "تم التحديث ✅" });
-    } else {
-      await supabase.from("driver_packages").insert(payload);
-      toast({ title: "تم إضافة الباقة ✅" });
+    const { error } = editing
+      ? await supabase.from("driver_packages").update(payload).eq("id", editing.id)
+      : await supabase.from("driver_packages").insert(payload);
+
+    if (error) {
+      toast({ title: "تعذّر الحفظ", description: error.message, variant: "destructive" });
+      return;
     }
+    toast({ title: editing ? "تم التحديث ✅" : "تم إضافة الباقة ✅" });
     setShowForm(false);
     setEditing(null);
     fetchData();
