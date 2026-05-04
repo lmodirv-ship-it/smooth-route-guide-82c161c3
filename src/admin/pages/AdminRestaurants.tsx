@@ -9,7 +9,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import { toast } from "@/hooks/use-toast";
-import { Plus, Pencil, Store, UtensilsCrossed, Loader2, Sparkles, Save } from "lucide-react";
+import { Plus, Pencil, Store, UtensilsCrossed, Loader2, Sparkles, Save, RefreshCw, ListPlus } from "lucide-react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import CsvMenuImport from "@/admin/components/CsvMenuImport";
 import { Badge } from "@/components/ui/badge";
@@ -33,6 +33,63 @@ const AdminRestaurants = () => {
   const [generatedStores, setGeneratedStores] = useState<any[]>([]);
   const [generating, setGenerating] = useState(false);
   const [saving, setSaving] = useState(false);
+  const [autoMenu, setAutoMenu] = useState(true);
+  const [generatingMenuFor, setGeneratingMenuFor] = useState<string | null>(null);
+
+  // Generate menu for one store via AI and persist to DB
+  const generateMenuForStore = async (store: any): Promise<{ cats: number; items: number }> => {
+    const { data, error } = await supabase.functions.invoke("generate-menu", {
+      body: {
+        restaurantName: store.name,
+        restaurantCategory: store.category || "restaurant",
+        restaurantAddress: store.address || "",
+      },
+    });
+    if (error) throw error;
+    const menu = data?.menu;
+    if (!menu?.categories?.length) throw new Error("AI returned empty menu");
+
+    let catCount = 0, itemCount = 0;
+    for (let i = 0; i < menu.categories.length; i++) {
+      const c = menu.categories[i];
+      const { data: catRow, error: catErr } = await supabase
+        .from("menu_categories")
+        .insert({ store_id: store.id, name_ar: c.name_ar, name_fr: c.name_fr || c.name_ar, sort_order: i })
+        .select("id").single();
+      if (catErr) continue;
+      catCount++;
+      const itemsPayload = (c.items || []).map((it: any, j: number) => ({
+        store_id: store.id,
+        category_id: catRow.id,
+        name_ar: it.name_ar,
+        name_fr: it.name_fr || it.name_ar,
+        description_ar: it.description_ar || "",
+        price: Number(it.price) || 0,
+        is_available: true,
+        sort_order: j,
+      }));
+      if (itemsPayload.length) {
+        const { error: itErr } = await supabase.from("menu_items").insert(itemsPayload);
+        if (!itErr) itemCount += itemsPayload.length;
+      }
+    }
+    return { cats: catCount, items: itemCount };
+  };
+
+  const regenerateMenuForStore = async (store: any) => {
+    setGeneratingMenuFor(store.id);
+    try {
+      // Wipe existing
+      await supabase.from("menu_items").delete().eq("store_id", store.id);
+      await supabase.from("menu_categories").delete().eq("store_id", store.id);
+      const { cats, items } = await generateMenuForStore(store);
+      toast({ title: `✅ ${store.name}: ${cats} فئة / ${items} منتج` });
+      fetchAll();
+    } catch (e: any) {
+      toast({ title: "خطأ في توليد القائمة", description: e.message, variant: "destructive" });
+    }
+    setGeneratingMenuFor(null);
+  };
 
   const generateStoreCode = () => {
     return String(Math.floor(100000 + Math.random() * 900000));
@@ -97,9 +154,25 @@ const AdminRestaurants = () => {
         store_code: r.store_code || generateStoreCode(),
         is_confirmed: false,
       }));
-      const { error } = await supabase.from("stores").insert(toInsert);
+      const { data: inserted, error } = await supabase.from("stores").insert(toInsert).select("*");
       if (error) throw error;
       toast({ title: `✅ ${tr.saved.replace("{count}", String(toInsert.length))}` });
+
+      // Auto-generate menus for newly inserted stores
+      if (autoMenu && inserted?.length) {
+        toast({ title: `🍽️ توليد القوائم لـ ${inserted.length} مطعم...` });
+        let okCount = 0;
+        for (const st of inserted) {
+          try {
+            await generateMenuForStore(st);
+            okCount++;
+          } catch (e) {
+            console.error("auto menu failed for", st.name, e);
+          }
+        }
+        toast({ title: `✅ تم توليد قوائم ${okCount}/${inserted.length} مطعم` });
+      }
+
       setGeneratedStores([]);
       fetchAll();
     } catch (err: any) {
@@ -209,7 +282,11 @@ const AdminRestaurants = () => {
     <div className="space-y-6" dir={dir}>
       <div className="flex items-center justify-between flex-wrap gap-3">
         <h1 className="text-2xl font-bold text-foreground flex items-center gap-2"><Store className="w-6 h-6" /> {tr.title}</h1>
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2 flex-wrap">
+          <label className="flex items-center gap-2 text-xs px-3 py-2 rounded-lg border border-border bg-secondary/40 cursor-pointer">
+            <Switch checked={autoMenu} onCheckedChange={setAutoMenu} />
+            <span className="font-medium">توليد القائمة تلقائياً مع المطعم</span>
+          </label>
           <Button onClick={generateRestaurants} disabled={generating} className="gap-1 bg-green-600 hover:bg-green-700 text-white">
             {generating ? <Loader2 className="w-4 h-4 animate-spin" /> : <Sparkles className="w-4 h-4" />} {tr.generate}
           </Button>
@@ -284,6 +361,7 @@ const AdminRestaurants = () => {
                       <TableHead>{tr.rating}</TableHead>
                       <TableHead>{tr.commission}</TableHead>
                       <TableHead>{tr.confirmation}</TableHead>
+                      <TableHead>القائمة</TableHead>
                       <TableHead>{tr.actions}</TableHead>
                     </TableRow>
                  </TableHeader>
@@ -329,10 +407,32 @@ const AdminRestaurants = () => {
                          </Button>
                        </TableCell>
                        <TableCell>
-                         <div className="flex gap-2">
-                           <Button size="sm" variant="outline" onClick={() => openEditStore(s)}><Pencil className="w-3 h-3" /></Button>
-                           <Button size="sm" variant="outline" onClick={() => setSelectedStore(s.id)}>
-                             <UtensilsCrossed className="w-3 h-3 mr-1" />{tr.menu}
+                         {(() => {
+                           const count = menuItems.filter(i => i.store_id === s.id).length;
+                           return (
+                             <Badge variant="outline" className={count > 0 ? "border-emerald-500/40 text-emerald-500" : "border-orange-500/40 text-orange-500"}>
+                               {count > 0 ? `${count} منتج` : "فارغة"}
+                             </Badge>
+                           );
+                         })()}
+                       </TableCell>
+                       <TableCell>
+                         <div className="flex gap-1 flex-wrap">
+                           <Button size="sm" variant="outline" onClick={() => openEditStore(s)} title="تعديل"><Pencil className="w-3 h-3" /></Button>
+                           <Button size="sm" variant="outline" onClick={() => setSelectedStore(s.id)} title="عرض القائمة">
+                             <UtensilsCrossed className="w-3 h-3" />
+                           </Button>
+                           <Button
+                             size="sm"
+                             variant="outline"
+                             className="text-purple-500 border-purple-500/30"
+                             disabled={generatingMenuFor === s.id}
+                             onClick={() => regenerateMenuForStore(s)}
+                             title="إعادة توليد القائمة بالذكاء الاصطناعي"
+                           >
+                             {generatingMenuFor === s.id
+                               ? <Loader2 className="w-3 h-3 animate-spin" />
+                               : <RefreshCw className="w-3 h-3" />}
                            </Button>
                          </div>
                        </TableCell>
