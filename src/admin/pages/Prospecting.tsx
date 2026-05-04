@@ -14,6 +14,7 @@ import {
 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import ProspectDetailSheet from "@/admin/components/ProspectDetailSheet";
+import ProspectsGallery from "@/admin/components/ProspectsGallery";
 import { toast } from "sonner";
 
 type ProspectResult = {
