@@ -203,6 +203,6 @@ export const mainRouteElements = (
     {/* Catch-all driver-panel/* → driver/* */}
     <Route path="/driver-panel/*" element={<Navigate to="/driver" replace />} />
 
-    <Route path="*" element={<NotFound />} />
+    <Route path="*" element={<LazyPage component={NotFound} />} />
   </>
 );
