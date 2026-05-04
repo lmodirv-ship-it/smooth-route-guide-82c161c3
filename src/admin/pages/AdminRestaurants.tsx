@@ -292,7 +292,7 @@ const AdminRestaurants = () => {
 
   const openEditStore = (store: any) => {
     setEditingStore(store);
-    setStoreForm({ name: store.name, description: store.description || "", address: store.address || "", phone: store.phone || "", delivery_fee: store.delivery_fee || 10, delivery_time_min: store.delivery_time_min || 20, delivery_time_max: store.delivery_time_max || 40, rating: store.rating || 4.5, commission_rate: store.commission_rate ?? 5 });
+    setStoreForm({ name: store.name, description: store.description || "", address: store.address || "", phone: store.phone || "", email: store.email || "", delivery_fee: store.delivery_fee || 10, delivery_time_min: store.delivery_time_min || 20, delivery_time_max: store.delivery_time_max || 40, rating: store.rating || 4.5, commission_rate: store.commission_rate ?? 5 });
     setShowStoreDialog(true);
   };
 
