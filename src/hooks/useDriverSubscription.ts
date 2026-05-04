@@ -30,11 +30,28 @@ export interface DriverPackage {
 export function useDriverSubscription() {
   const [activeSubscription, setActiveSubscription] = useState<DriverSubscription | null>(null);
   const [loading, setLoading] = useState(true);
-  const [daysLeft, setDaysLeft] = useState(0);
-  const [isExpired, setIsExpired] = useState(true);
+  const [daysLeft, setDaysLeft] = useState(9999);
+  const [isExpired, setIsExpired] = useState(false);
 
   useEffect(() => {
+    // Platform is free for all registered users — no subscription required
     const check = async () => {
+      setIsExpired(false);
+      setDaysLeft(9999);
+      setActiveSubscription({
+        id: "free-platform",
+        status: "free",
+        starts_at: new Date().toISOString(),
+        expires_at: new Date(Date.now() + 365 * 24 * 60 * 60 * 1000).toISOString(),
+        orders_used: 0,
+        km_used: 0,
+        package_name: "منصة مجانية",
+        duration_days: 365,
+      });
+      setLoading(false);
+      return;
+      // eslint-disable-next-line no-unreachable
+      // legacy logic below kept disabled
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) { setLoading(false); return; }
 
