@@ -9,6 +9,7 @@ export type NativeDownload = {
   platform: "mobile" | "desktop";
   version?: string;
   playStoreUrl?: string;
+  playStoreInternalTestUrl?: string;
 };
 
 export const nativeDownloadPageUrl = "/welcome#mobile-download";
