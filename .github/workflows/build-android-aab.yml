@@ -6,6 +6,9 @@ on:
     tags:
       - 'v*'                # أو دفع tag مثل v1.0.0
 
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+
 jobs:
   build:
     name: Build Signed AAB
