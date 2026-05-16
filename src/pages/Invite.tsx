@@ -74,6 +74,42 @@ const Invite = () => {
     trackEvent("Share", { method: "email", content_type: "referral" });
   };
 
+  const sendInviteEmail = async () => {
+    const email = emailTo.trim();
+    if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+      toast.error("الرجاء إدخال بريد إلكتروني صحيح");
+      return;
+    }
+    setSending(true);
+    try {
+      const idempotencyKey = `invite-friend-${email}-${Date.now()}`;
+      const { error } = await supabase.functions.invoke("send-transactional-email", {
+        body: {
+          templateName: "invite-friend",
+          recipientEmail: email,
+          idempotencyKey,
+          templateData: {
+            inviterName: inviterName || undefined,
+            recipientName: recipientName.trim() || undefined,
+            inviteUrl,
+            message: customMessage.trim() || undefined,
+          },
+        },
+      });
+      if (error) throw error;
+      trackEvent("Share", { method: "email_invite", content_type: "referral" });
+      toast.success("تم إرسال الدعوة بنجاح ✉️");
+      setEmailTo("");
+      setRecipientName("");
+      setCustomMessage("");
+    } catch (e: any) {
+      console.error("Invite send failed", e);
+      toast.error(e?.message || "تعذر إرسال الدعوة، حاول مرة أخرى");
+    } finally {
+      setSending(false);
+    }
+  };
+
   return (
     <div className="min-h-screen gradient-dark px-4 py-8" dir="rtl">
       <PageMeta
