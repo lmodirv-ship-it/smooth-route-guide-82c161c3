@@ -174,6 +174,31 @@ const Invite = () => {
           </Button>
         </div>
 
+        {/* Direct email invite form */}
+        <div className="glass-card rounded-2xl p-5 mb-6">
+          <div className="flex items-center gap-2 mb-4">
+            <Mail className="w-5 h-5 text-primary" />
+            <h2 className="font-bold text-foreground">إرسال دعوة عبر البريد الإلكتروني</h2>
+          </div>
+          <div className="space-y-3">
+            <div>
+              <Label htmlFor="invite-email" className="text-xs text-muted-foreground mb-1 block">البريد الإلكتروني *</Label>
+              <Input id="invite-email" type="email" placeholder="friend@example.com" value={emailTo} onChange={(e) => setEmailTo(e.target.value)} className="bg-secondary border-border" dir="ltr" />
+            </div>
+            <div>
+              <Label htmlFor="invite-name" className="text-xs text-muted-foreground mb-1 block">اسم الصديق (اختياري)</Label>
+              <Input id="invite-name" placeholder="سارة" value={recipientName} onChange={(e) => setRecipientName(e.target.value)} className="bg-secondary border-border" />
+            </div>
+            <div>
+              <Label htmlFor="invite-msg" className="text-xs text-muted-foreground mb-1 block">رسالة شخصية (اختياري)</Label>
+              <Textarea id="invite-msg" placeholder="جربها معايا، خدمة رائعة!" value={customMessage} onChange={(e) => setCustomMessage(e.target.value)} maxLength={300} rows={3} className="bg-secondary border-border resize-none" />
+            </div>
+            <Button onClick={sendInviteEmail} disabled={sending || !emailTo} className="w-full gradient-primary text-primary-foreground h-11">
+              {sending ? (<><Loader2 className="w-4 h-4 ml-2 animate-spin" /> جاري الإرسال...</>) : (<><Send className="w-4 h-4 ml-2" /> إرسال الدعوة</>)}
+            </Button>
+          </div>
+        </div>
+
         {/* Leaderboard */}
         {leaderboard.length > 0 && (
           <div className="glass-card rounded-2xl p-5">
