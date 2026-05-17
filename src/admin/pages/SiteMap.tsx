@@ -44,13 +44,6 @@ const AdminSiteMap = () => {
       map[e.category].push(e);
     }
     return Object.entries(map);
-    // eslint-disable-next-line no-unreachable
-    const _unused = new globalThis.Map();
-    for (const e of filtered) {
-      if (!map.has(e.category)) map.set(e.category, []);
-      map.get(e.category)!.push(e);
-    }
-    return Array.from(map.entries());
   }, [filtered]);
 
   const copyPath = (path: string) => {
