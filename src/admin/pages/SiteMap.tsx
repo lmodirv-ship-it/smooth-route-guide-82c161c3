@@ -38,7 +38,14 @@ const AdminSiteMap = () => {
   }, [query, activeCategory, activeAccess]);
 
   const grouped = useMemo(() => {
-    const map = new Map<string, typeof filtered>();
+    const map: Record<string, typeof filtered> = {};
+    for (const e of filtered) {
+      if (!map[e.category]) map[e.category] = [];
+      map[e.category].push(e);
+    }
+    return Object.entries(map);
+    // eslint-disable-next-line no-unreachable
+    const _unused = new globalThis.Map();
     for (const e of filtered) {
       if (!map.has(e.category)) map.set(e.category, []);
       map.get(e.category)!.push(e);
