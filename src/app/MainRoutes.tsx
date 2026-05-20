@@ -178,6 +178,10 @@ export const mainRouteElements = (
     {/* ─── Unsubscribe ─── */}
     <Route path="/unsubscribe" element={<LazyPage component={Unsubscribe} />} />
 
+    {/* ─── Blog (public, no auth required) ─── */}
+    <Route path="/blog" element={<LazyPage component={BlogList} />} />
+    <Route path="/blog/:idOrSlug" element={<LazyPage component={BlogArticle} />} />
+
     {/* ─── Dynamic CMS Pages ─── */}
     <Route path="/p/:slug" element={<LazyPage component={DynamicPage} />} />
 
