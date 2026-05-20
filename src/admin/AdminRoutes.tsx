@@ -64,6 +64,7 @@ const MailBlusterTemplates = lazy(() => import("@/admin/pages/MailBlusterTemplat
 const ApiKeysPage = lazy(() => import("@/admin/pages/ApiKeys"));
 const PartnerSitesManagement = lazy(() => import("@/admin/pages/PartnerSitesManagement"));
 const AdminSiteMap = lazy(() => import("@/admin/pages/SiteMap"));
+const AdminBlog = lazy(() => import("@/admin/pages/AdminBlog"));
 const UtmBuilder = lazy(() => import("@/admin/pages/UtmBuilder"));
 const CampaignsDashboard = lazy(() => import("@/admin/pages/CampaignsDashboard"));
 
