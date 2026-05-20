@@ -87,6 +87,8 @@ const HNGroupePortal = lazy(() => import("@/pages/HNGroupePortal"));
 const AllProjects = lazy(() => import("@/pages/AllProjects"));
 const PrivacyPolicy = lazy(() => import("@/pages/PrivacyPolicy"));
 const Unsubscribe = lazy(() => import("@/pages/Unsubscribe"));
+const BlogList = lazy(() => import("@/pages/BlogList"));
+const BlogArticle = lazy(() => import("@/pages/BlogArticle"));
 
 export const mainRouteElements = (
   <>
