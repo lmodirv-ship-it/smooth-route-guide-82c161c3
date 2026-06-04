@@ -1,0 +1,33 @@
+{
+  "name": "hn-callcenter-desktop",
+  "version": "1.0.0",
+  "description": "HN Driver Call Center Desktop (Windows OTA)",
+  "main": "main.cjs",
+  "scripts": {
+    "start": "electron .",
+    "build": "electron-builder --win --publish never"
+  },
+  "build": {
+    "appId": "company.hndriver.callcenter",
+    "productName": "HN Call Center",
+    "files": ["main.cjs", "icon.ico", "package.json"],
+    "win": { "target": "nsis", "icon": "icon.ico" },
+    "nsis": {
+      "oneClick": false,
+      "allowToChangeInstallationDirectory": true,
+      "createDesktopShortcut": true
+    },
+    "publish": {
+      "provider": "generic",
+      "url": "https://www.hndriver.company/downloads/desktop/callcenter/"
+    }
+  },
+  "devDependencies": {
+    "electron": "^31.0.0",
+    "electron-builder": "^24.13.3"
+  },
+  "dependencies": {
+    "electron-updater": "^6.3.0",
+    "electron-log": "^5.1.0"
+  }
+}

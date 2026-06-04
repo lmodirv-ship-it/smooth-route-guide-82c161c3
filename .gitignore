@@ -1,4 +1,9 @@
-﻿node_modules/
+node_modules/
 dist/
 build/
 .env
+# Large generated binaries must stay out of GitHub/Lovable sync
+public/downloads/apps/*.apk
+public/downloads/*.apk
+public/downloads/desktop/**/*.exe
+public/downloads/**/*.exe

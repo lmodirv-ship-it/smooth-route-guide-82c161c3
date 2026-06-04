@@ -93,7 +93,7 @@ const CallCenterLayout = () => {
   const SidebarContent = () => (
     <>
       <div className="p-4 flex items-center gap-3 border-b border-border">
-        <img src={logo} alt="HN" className="w-8 h-8 flex-shrink-0" />
+        <a href="/" aria-label="Home"><img src={logo} alt="HN" className="w-8 h-8 flex-shrink-0 cursor-pointer" /></a>
         {!collapsed && (
           <span className="font-bold text-gradient-primary font-display text-sm">{t.callCenter.title}</span>
         )}

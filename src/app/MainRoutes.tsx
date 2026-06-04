@@ -86,9 +86,13 @@ const CitiesIndex = lazy(() => import("@/pages/CitiesIndex"));
 const HNGroupePortal = lazy(() => import("@/pages/HNGroupePortal"));
 const AllProjects = lazy(() => import("@/pages/AllProjects"));
 const PrivacyPolicy = lazy(() => import("@/pages/PrivacyPolicy"));
+const TermsAndConditions = lazy(() => import("@/pages/TermsAndConditions"));
 const Unsubscribe = lazy(() => import("@/pages/Unsubscribe"));
 const BlogList = lazy(() => import("@/pages/BlogList"));
 const BlogArticle = lazy(() => import("@/pages/BlogArticle"));
+const Register = lazy(() => import("@/pages/Register"));
+const TopNavPage = lazy(() => import("@/pages/TopNavPage"));
+const WhyHNPage = lazy(() => import("@/pages/WhyHNPage"));
 
 export const mainRouteElements = (
   <>
@@ -103,6 +107,12 @@ export const mainRouteElements = (
     <Route path="/complete-profile" element={<RequireRole><LazyPage component={CompleteProfile} /></RequireRole>} />
     <Route path="/forgot-password" element={<LazyPage component={ForgotPassword} />} />
     <Route path="/reset-password" element={<LazyPage component={ResetPassword} />} />
+    <Route path="/register/:type" element={<LazyPage component={Register} />} />
+    <Route path="/services" element={<LazyPage component={TopNavPage} />} />
+    <Route path="/pricing" element={<LazyPage component={TopNavPage} />} />
+    <Route path="/features" element={<LazyPage component={TopNavPage} />} />
+    <Route path="/contact" element={<LazyPage component={TopNavPage} />} />
+    <Route path="/why-hn" element={<LazyPage component={WhyHNPage} />} />
     <Route path="/community" element={<RequireRole><LazyPage component={CommunityChat} /></RequireRole>} />
 
     {/* ═══════════════════════════════════════════
@@ -174,6 +184,8 @@ export const mainRouteElements = (
 
     {/* ─── Privacy Policy ─── */}
     <Route path="/privacy" element={<LazyPage component={PrivacyPolicy} />} />
+    <Route path="/terms" element={<LazyPage component={TermsAndConditions} />} />
+    <Route path="/terms-and-conditions" element={<LazyPage component={TermsAndConditions} />} />
 
     {/* ─── Unsubscribe ─── */}
     <Route path="/unsubscribe" element={<LazyPage component={Unsubscribe} />} />

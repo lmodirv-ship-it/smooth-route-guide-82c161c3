@@ -99,7 +99,7 @@ const ForgotPassword = () => {
         animate={{ opacity: 1, y: 0 }}
         className="flex flex-col items-center mb-8 relative z-10"
       >
-        <img src={logo} alt="HN" className="w-16 h-16 mb-3" />
+        <a href="/" aria-label="Home"><img src={logo} alt="HN" className="w-16 h-16 mb-3 cursor-pointer" /></a>
         <h1 className="text-2xl font-bold text-foreground">استعادة كلمة المرور</h1>
         <p className="text-sm text-muted-foreground mt-1">اختر طريقة استعادة حسابك</p>
       </motion.div>

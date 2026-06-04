@@ -3,6 +3,7 @@ import { useParams } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import ReactMarkdown from "react-markdown";
 import { Loader2 } from "lucide-react";
+import DOMPurify from "dompurify";
 
 type Block = {
   type: string;
@@ -154,7 +155,7 @@ const BlockRenderer = ({ block }: { block: Block }) => {
       return <hr className="my-8 border-border max-w-4xl mx-auto" />;
 
     case "html":
-      return <section className="py-8 px-6 max-w-5xl mx-auto" dangerouslySetInnerHTML={{ __html: block.code || "" }} />;
+      return <section className="py-8 px-6 max-w-5xl mx-auto" dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(block.code || "", { FORBID_TAGS: ["script", "style", "iframe", "object", "embed", "link", "meta"], FORBID_ATTR: ["onerror", "onload", "onclick", "onmouseover", "onfocus", "onblur", "onchange", "onsubmit"] }) }} />;
 
     case "table":
       return (
@@ -311,7 +312,7 @@ const DynamicPage = () => {
 
   return (
     <div className="min-h-screen gradient-dark" dir="rtl">
-      {page.css_overrides && <style>{page.css_overrides}</style>}
+      {/* css_overrides intentionally not rendered — see security policy */}
       {(page.content || []).map((block, i) => (
         <BlockRenderer key={i} block={block} />
       ))}

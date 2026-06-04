@@ -24,7 +24,7 @@ const fr: TranslationSet = {
     ctaTitle: "Découvrez nos services d'abord",
     ctaSubtitle: "Parcourez restaurants, boutiques et tarifs — inscrivez-vous uniquement pour commander.",
     ctaButton: "Parcourir les services",
-    footerRights: "© 2024 HN Driver. Tous droits réservés.",
+    footerRights: "© 2026 HN Driver. Tous droits réservés — el hassani moulay ismail. groupe hn.",
     footerTerms: "Conditions d'utilisation",
     footerPrivacy: "Politique de confidentialité",
     footerContact: "Nous contacter",

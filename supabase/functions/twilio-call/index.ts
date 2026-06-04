@@ -43,6 +43,16 @@ Deno.serve(async (req) => {
     const { data: { user }, error: authError } = await supabase.auth.getUser();
     if (authError || !user) return json({ error: "Unauthorized" }, 401);
 
+    // Role check — only admins/agents can place real phone calls (Twilio billing protection)
+    const { data: roles } = await supabase
+      .from("user_roles")
+      .select("role")
+      .eq("user_id", user.id);
+    const allowed = (roles || []).some((r: { role: string }) =>
+      ["admin", "agent"].includes(r.role)
+    );
+    if (!allowed) return json({ error: "Forbidden" }, 403);
+
     const { to, twiml_url } = await req.json();
 
     if (!to) {
@@ -55,11 +65,26 @@ Deno.serve(async (req) => {
       return json({ error: "صيغة رقم الهاتف غير صحيحة. يجب أن يبدأ بـ + متبوعاً بكود الدولة" }, 400);
     }
 
+    // Validate twiml_url against an allowlist of trusted domains
+    const TWIML_ALLOWLIST = ["demo.twilio.com", "handler.twilio.com"];
+    let safeTwimlUrl = "http://demo.twilio.com/docs/voice.xml";
+    if (twiml_url) {
+      try {
+        const parsed = new URL(twiml_url);
+        if (!TWIML_ALLOWLIST.includes(parsed.hostname)) {
+          return json({ error: "twiml_url domain not allowed" }, 400);
+        }
+        safeTwimlUrl = twiml_url;
+      } catch {
+        return json({ error: "Invalid twiml_url" }, 400);
+      }
+    }
+
     // Initiate call via Twilio gateway
     const params = new URLSearchParams({
       To: to,
       From: TWILIO_PHONE,
-      Url: twiml_url || "http://demo.twilio.com/docs/voice.xml",
+      Url: safeTwimlUrl,
     });
 
     const response = await fetch(`${GATEWAY_URL}/Calls.json`, {

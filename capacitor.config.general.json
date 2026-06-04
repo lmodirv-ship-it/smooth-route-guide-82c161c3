@@ -1,0 +1,10 @@
+{
+  "appId": "com.hndriver.general",
+  "appName": "HN Driver",
+  "webDir": "dist",
+  "android": { "allowMixedContent": true, "backgroundColor": "#0A0A0A" },
+  "plugins": {
+    "SplashScreen": { "launchAutoHide": true, "backgroundColor": "#0A0A0A", "showSpinner": true, "spinnerColor": "#FFD700" },
+    "StatusBar": { "style": "DARK", "backgroundColor": "#0A0A0A" }
+  }
+}

@@ -83,7 +83,8 @@ const Splash = () => {
           <motion.img
             src={splashLogo}
             alt="HN Driver"
-            className="w-72 h-auto mx-auto rounded-3xl drop-shadow-2xl"
+            onClick={() => navigate("/")}
+            className="w-72 h-auto mx-auto rounded-3xl drop-shadow-2xl cursor-pointer"
             animate={{
               filter: phase >= 1
                 ? ["drop-shadow(0 0 30px hsl(32, 95%, 55%, 0.4))", "drop-shadow(0 0 50px hsl(32, 95%, 55%, 0.6))", "drop-shadow(0 0 30px hsl(32, 95%, 55%, 0.4))"]

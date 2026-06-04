@@ -213,7 +213,7 @@ const AuthPage = () => {
     <div className="flex min-h-screen flex-col px-6 py-8 gradient-hero particles-bg relative">
       <button
         type="button"
-        onClick={() => navigate("/welcome")}
+        onClick={() => navigate("/")}
         className="self-start mb-6 relative z-10"
         style={{ touchAction: "manipulation", WebkitTapHighlightColor: "transparent" }}
       >
@@ -226,7 +226,7 @@ const AuthPage = () => {
         className="flex flex-col items-center mb-8 relative z-10"
       >
         <div className="relative">
-          <img src={logo} alt="HN Driver" className="w-16 h-16 mb-3" />
+          <a href="/" aria-label="Home"><img src={logo} alt="HN Driver" className="w-16 h-16 mb-3 cursor-pointer" /></a>
           <div className="absolute inset-0 w-16 h-16 rounded-full bg-primary/10 blur-xl" />
         </div>
         <h1 className="text-2xl font-bold text-foreground">

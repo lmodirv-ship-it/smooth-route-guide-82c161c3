@@ -8,8 +8,8 @@
  */
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes } from "react-router-dom";
-import { Toaster as Sonner } from "@/components/ui/sonner";
 import { Toaster } from "@/components/ui/toaster";
+import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { CartProvider } from "@/contexts/CartContext";
 import { I18nProvider } from "@/i18n/context";
@@ -29,9 +29,9 @@ import { adminRouteElements } from "./admin/index";
 const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
-      staleTime: 5 * 60 * 1000,      // 5 min — avoid refetching fresh data
-      gcTime: 10 * 60 * 1000,         // 10 min cache
-      refetchOnWindowFocus: false,    // prevent redundant fetches on tab switch
+      staleTime: 5 * 60 * 1000, // 5 min — avoid refetching fresh data
+      gcTime: 10 * 60 * 1000, // 10 min cache
+      refetchOnWindowFocus: false, // prevent redundant fetches on tab switch
       retry: 2,
     },
   },
@@ -47,6 +47,7 @@ const AppInner = () => {
           {mainRouteElements}
           {adminRouteElements}
         </Routes>
+
         <GlobalCallProvider />
       </CallProvider>
     </BrowserRouter>

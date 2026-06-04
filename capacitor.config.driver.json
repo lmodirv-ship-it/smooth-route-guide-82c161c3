@@ -1,0 +1,10 @@
+{
+  "appId": "com.hndriver.driver",
+  "appName": "HN Driver Ride",
+  "webDir": "dist-driver-ride",
+  "android": { "allowMixedContent": true, "backgroundColor": "#0A0A0A" },
+  "plugins": {
+    "SplashScreen": { "launchAutoHide": true, "backgroundColor": "#0A0A0A", "showSpinner": true, "spinnerColor": "#F97316" },
+    "StatusBar": { "style": "DARK", "backgroundColor": "#0A0A0A" }
+  }
+}

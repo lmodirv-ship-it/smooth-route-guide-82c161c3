@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
-import { Car, Star, FileCheck, Power, PowerOff, Search, Eye } from "lucide-react";
+import { Car, Star, FileCheck, Power, PowerOff, Search, Eye, Clock } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -15,7 +15,15 @@ interface Driver {
   id: string; user_id: string; license_no: string; rating: number | null;
   status: string; created_at: string; car_id: string | null; driver_type?: string;
   name?: string; vehicle?: { brand: string; model: string; plate_no: string; color: string | null } | null;
+  todayMinutes?: number;
 }
+
+const fmtHm = (mins: number) => {
+  const h = Math.floor(mins / 60);
+  const m = mins % 60;
+  if (h <= 0) return `${m} د`;
+  return `${h} س ${m} د`;
+};
 
 const AdminDrivers = () => {
   const [drivers, setDrivers] = useState<Driver[]>([]);
@@ -24,19 +32,44 @@ const AdminDrivers = () => {
   const [search, setSearch] = useState("");
   const [selectedDriver, setSelectedDriver] = useState<Driver | null>(null);
   const [docs, setDocs] = useState<any[]>([]);
+  const [dailyHours, setDailyHours] = useState<{ day: string; minutes: number }[]>([]);
 
   const fetchDrivers = async () => {
     const { data } = await supabase.from("drivers").select("*").order("created_at", { ascending: false }) as any;
     if (!data) return;
     const uids = data.map((d: any) => d.user_id);
     const carIds = data.filter((d: any) => d.car_id).map((d: any) => d.car_id);
-    const [profilesRes, vehiclesRes] = await Promise.all([
+    const driverIds = data.map((d: any) => d.id);
+    const todayUtc = new Date().toISOString().slice(0, 10);
+
+    const [profilesRes, vehiclesRes, sessionsRes] = await Promise.all([
       supabase.from("profiles").select("id, name").in("id", uids),
       carIds.length ? supabase.from("vehicles").select("id, brand, model, plate_no, color").in("id", carIds) : { data: [] },
-    ]);
-    const nameMap = new Map(profilesRes.data?.map(p => [p.id, p.name]) || []);
+      driverIds.length
+        ? supabase.from("driver_work_sessions")
+            .select("driver_id, started_at, ended_at, duration_minutes, work_date")
+            .in("driver_id", driverIds)
+            .eq("work_date", todayUtc)
+        : { data: [] },
+    ]) as any;
+
+    const nameMap = new Map(profilesRes.data?.map((p: any) => [p.id, p.name]) || []);
     const carMap = new Map((vehiclesRes.data || []).map((v: any) => [v.id, v]));
-    setDrivers(data.map((d: any) => ({ ...d, name: nameMap.get(d.user_id) || "سائق", vehicle: d.car_id ? carMap.get(d.car_id) : null })));
+    const todayMinMap = new Map<string, number>();
+    const now = Date.now();
+    (sessionsRes.data || []).forEach((s: any) => {
+      const mins = s.ended_at
+        ? (s.duration_minutes ?? 0)
+        : Math.max(0, Math.floor((now - new Date(s.started_at).getTime()) / 60000));
+      todayMinMap.set(s.driver_id, (todayMinMap.get(s.driver_id) || 0) + mins);
+    });
+
+    setDrivers(data.map((d: any) => ({
+      ...d,
+      name: nameMap.get(d.user_id) || "سائق",
+      vehicle: d.car_id ? carMap.get(d.car_id) : null,
+      todayMinutes: todayMinMap.get(d.id) || 0,
+    })));
   };
 
   useEffect(() => { fetchDrivers(); }, []);
@@ -51,8 +84,13 @@ const AdminDrivers = () => {
 
   const openDetail = async (driver: Driver) => {
     setSelectedDriver(driver);
-    const { data } = await supabase.from("documents").select("*").eq("driver_id", driver.id);
-    setDocs(data || []);
+    setDailyHours([]);
+    const [docsRes, hoursRes] = await Promise.all([
+      supabase.from("documents").select("*").eq("driver_id", driver.id),
+      supabase.rpc("driver_daily_hours", { p_driver_id: driver.id, p_days: 7 }),
+    ]) as any;
+    setDocs(docsRes.data || []);
+    setDailyHours(hoursRes.data || []);
   };
 
   const filtered = drivers.filter(d => {
@@ -106,13 +144,14 @@ const AdminDrivers = () => {
               <th className="h-12 px-4 text-right align-middle font-medium text-muted-foreground">التقييم</th>
               <th className="h-12 px-4 text-right align-middle font-medium text-muted-foreground">السيارة</th>
               <th className="h-12 px-4 text-center align-middle font-medium text-muted-foreground">النوع</th>
+              <th className="h-12 px-4 text-center align-middle font-medium text-muted-foreground">ساعات اليوم</th>
               <th className="h-12 px-4 text-center align-middle font-medium text-muted-foreground">الحالة</th>
               <th className="h-12 px-4 text-center align-middle font-medium text-muted-foreground">إجراءات</th>
             </tr>
           </thead>
           <tbody className="[&_tr:last-child]:border-0">
             {filtered.length === 0 ? (
-              <tr><td colSpan={8} className="text-center py-10 text-muted-foreground">لا يوجد سائقون</td></tr>
+              <tr><td colSpan={9} className="text-center py-10 text-muted-foreground">لا يوجد سائقون</td></tr>
             ) : filtered.map((driver) => (
               <tr key={driver.id} className="border-b transition-colors hover:bg-muted/50">
                 <td className="p-4 align-middle font-mono text-sm font-bold">{(driver as any).driver_code || "—"}</td>
@@ -124,6 +163,12 @@ const AdminDrivers = () => {
                   <Badge variant="outline" className={driver.driver_type === "delivery" ? "text-info border-info/30" : "text-primary border-primary/30"}>
                     {driver.driver_type === "delivery" ? "طلبيات" : driver.driver_type === "both" ? "الكل" : "ركاب"}
                   </Badge>
+                </td>
+                <td className="p-4 align-middle text-center">
+                  <span className="inline-flex items-center gap-1 text-xs text-foreground">
+                    <Clock className="w-3 h-3 text-info" />
+                    {fmtHm(driver.todayMinutes || 0)}
+                  </span>
                 </td>
                 <td className="p-4 align-middle text-center">
                   <Badge variant="outline" className={driver.status === "active" ? "text-success border-success/30" : "text-muted-foreground border-border"}>
@@ -192,6 +237,25 @@ const AdminDrivers = () => {
                   <p className="text-sm text-foreground">{selectedDriver.vehicle.brand} {selectedDriver.vehicle.model} — {selectedDriver.vehicle.plate_no} {selectedDriver.vehicle.color ? `(${selectedDriver.vehicle.color})` : ""}</p>
                 </div>
               )}
+
+              <div className="p-3 rounded-lg bg-secondary/50">
+                <p className="text-xs text-muted-foreground mb-2 flex items-center gap-1">
+                  <Clock className="w-3 h-3" />
+                  ساعات العمل (آخر 7 أيام)
+                </p>
+                {dailyHours.length === 0 ? (
+                  <p className="text-xs text-muted-foreground">لا توجد ساعات مسجّلة</p>
+                ) : (
+                  <div className="space-y-1">
+                    {dailyHours.map((h) => (
+                      <div key={h.day} className="flex items-center justify-between text-sm">
+                        <span className="font-mono text-foreground">{fmtHm(h.minutes)}</span>
+                        <span className="text-muted-foreground text-xs">{h.day}</span>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
               <div>
                 <p className="text-sm font-semibold text-foreground mb-2">الوثائق ({docs.length})</p>
                 {docs.length === 0 ? <p className="text-xs text-muted-foreground">لا توجد وثائق</p> : (

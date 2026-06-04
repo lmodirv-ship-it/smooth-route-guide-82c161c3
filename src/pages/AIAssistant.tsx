@@ -213,7 +213,7 @@ const AIAssistant = () => {
           </Button>
         </div>
         <div className="flex items-center gap-2">
-          <img src={logo} alt="HN" className="w-8 h-8" />
+          <a href="/" aria-label="Home"><img src={logo} alt="HN" className="w-8 h-8 cursor-pointer" /></a>
           <span className="font-bold font-display text-gradient-primary text-lg">Assistant HN</span>
         </div>
         <Button variant="ghost" size="icon" onClick={() => window.history.back()}>

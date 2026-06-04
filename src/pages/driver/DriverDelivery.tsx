@@ -150,9 +150,13 @@ const DriverDelivery = () => {
 
     setActiveOrder(active as DeliveryOrder | null);
     if (!active) {
-      const query = supabase.from("delivery_orders").select("*")
-        .in("status", ["pending", "ready_for_driver"]).order("created_at", { ascending: false }).limit(20);
-      const { data: pending } = await query;
+      // Use sanitized RPC: customer name/phone/email are intentionally omitted
+      // for unassigned orders; full details unlock once the driver is assigned.
+      const { data: pendingRaw } = await supabase.rpc("available_delivery_orders");
+      const pending = ((pendingRaw as any[]) || [])
+        .filter((o) => o.status === "pending" || o.status === "ready_for_driver")
+        .sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())
+        .slice(0, 20);
 
       // Enrich with customer references
       const userIds = Array.from(new Set((pending || []).map((o: any) => o.user_id).filter(Boolean)));

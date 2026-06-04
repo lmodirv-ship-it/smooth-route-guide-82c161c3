@@ -24,7 +24,7 @@ const ar: TranslationSet = {
     ctaTitle: "اكتشف خدماتنا أولاً",
     ctaSubtitle: "تصفّح المطاعم والمتاجر والأسعار.. وعندما تطلب، سجّل رقمك فقط.",
     ctaButton: "تصفّح الخدمات",
-    footerRights: "© 2024 HN Driver. جميع الحقوق محفوظة.",
+    footerRights: "© 2026 HN Driver. جميع الحقوق محفوظة el hassani moulay ismail. groupe hn.",
     footerTerms: "الشروط والأحكام",
     footerPrivacy: "سياسة الخصوصية",
     footerContact: "اتصل بنا",

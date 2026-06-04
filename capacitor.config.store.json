@@ -1,0 +1,10 @@
+{
+  "appId": "com.hndriver.store",
+  "appName": "HN Store",
+  "webDir": "dist",
+  "android": { "allowMixedContent": true, "backgroundColor": "#0A0A0A" },
+  "plugins": {
+    "SplashScreen": { "launchAutoHide": true, "backgroundColor": "#0A0A0A", "showSpinner": true, "spinnerColor": "#FACC15" },
+    "StatusBar": { "style": "DARK", "backgroundColor": "#0A0A0A" }
+  }
+}

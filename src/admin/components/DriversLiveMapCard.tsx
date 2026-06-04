@@ -31,7 +31,15 @@ const DriversLiveMapCard = () => {
             <LeafletMap
               zoom={11}
               showMarker={false}
-              nearbyDrivers={drivers.map((driver) => ({ id: driver.id, lat: driver.lat, lng: driver.lng }))}
+              nearbyDrivers={drivers.map((driver) => ({
+                id: driver.id,
+                lat: driver.lat,
+                lng: driver.lng,
+                name: driver.name,
+                rating: driver.rating,
+                onlineSince: driver.onlineSince,
+              }))}
+              onDriverMarkerClick={(id) => setSelectedDriverId(id)}
             />
           </div>
         </div>

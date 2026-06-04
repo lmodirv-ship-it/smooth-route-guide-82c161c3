@@ -1,9 +1,10 @@
 {
-  "appId": "app.lovable.callcenter.871f3759",
-  "appName": "HN Driver - Call Center",
+  "appId": "com.hndriver.callcenter",
+  "appName": "HN Call Center",
   "webDir": "dist-call-center",
-  "server": {
-    "url": "https://871f3759-73ef-4579-8f08-9a7c52b1611d.lovableproject.com?forceHideBadge=true",
-    "cleartext": true
+  "android": { "allowMixedContent": true, "backgroundColor": "#0A0A0A" },
+  "plugins": {
+    "SplashScreen": { "launchAutoHide": true, "backgroundColor": "#0A0A0A", "showSpinner": true, "spinnerColor": "#06B6D4" },
+    "StatusBar": { "style": "DARK", "backgroundColor": "#0A0A0A" }
   }
 }

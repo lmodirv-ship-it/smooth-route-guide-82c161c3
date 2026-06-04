@@ -45,11 +45,11 @@ const StickyCTABar = () => {
     <AnimatePresence>
       {show && (
         <motion.div
-          initial={{ y: 100, opacity: 0 }}
+          initial={{ y: -100, opacity: 0 }}
           animate={{ y: 0, opacity: 1 }}
-          exit={{ y: 100, opacity: 0 }}
+          exit={{ y: -100, opacity: 0 }}
           transition={{ type: "spring", damping: 25 }}
-          className="fixed bottom-0 inset-x-0 z-50 p-3 pb-[max(0.75rem,env(safe-area-inset-bottom))]"
+          className="fixed top-0 inset-x-0 z-50 p-3 pt-[max(0.75rem,env(safe-area-inset-top))] md:top-auto md:bottom-0 md:pt-3 md:pb-[max(0.75rem,env(safe-area-inset-bottom))]"
         >
           <div className="max-w-lg mx-auto rounded-2xl border border-primary/40 bg-background/95 backdrop-blur-xl shadow-2xl shadow-primary/20 overflow-hidden">
             {/* Top glow line */}

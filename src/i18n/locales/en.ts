@@ -24,7 +24,7 @@ const en: TranslationSet = {
     ctaTitle: "Explore our services first",
     ctaSubtitle: "Browse restaurants, stores & prices — sign up only when you order.",
     ctaButton: "Browse Services",
-    footerRights: "© 2024 HN Driver. All rights reserved.",
+    footerRights: "© 2026 HN Driver. All rights reserved — el hassani moulay ismail. groupe hn.",
     footerTerms: "Terms of Service",
     footerPrivacy: "Privacy Policy",
     footerContact: "Contact Us",

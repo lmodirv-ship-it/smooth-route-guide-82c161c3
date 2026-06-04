@@ -95,7 +95,22 @@ interface NearbyDriverMarker {
   id: string;
   lat: number;
   lng: number;
+  name?: string;
+  rating?: number | null;
+  onlineSince?: string | null;
+  popupHtml?: string;
 }
+
+const formatOnlineDuration = (iso?: string | null): string | null => {
+  if (!iso) return null;
+  const ms = Date.now() - new Date(iso).getTime();
+  if (!isFinite(ms) || ms < 0) return null;
+  const totalMin = Math.floor(ms / 60000);
+  const h = Math.floor(totalMin / 60);
+  const m = totalMin % 60;
+  if (h <= 0) return `${m} د`;
+  return `${h} س ${m} د`;
+};
 
 interface RoutePoints {
   pickup: { lat: number; lng: number };
@@ -120,6 +135,7 @@ interface LeafletMapProps {
   /** Color for the route polyline (default: "#10b981") */
   routeColor?: string;
   onMapClick?: (latlng: { lat: number; lng: number }) => void;
+  onDriverMarkerClick?: (driverId: string) => void;
   expandable?: boolean;
   onExpandChange?: (expanded: boolean) => void;
   hideControls?: boolean;
@@ -144,6 +160,7 @@ const LeafletMap = ({
   route,
   routeColor = "#10b981",
   onMapClick,
+  onDriverMarkerClick,
   expandable = true,
   onExpandChange,
   hideControls = false,
@@ -311,9 +328,24 @@ const LeafletMap = ({
     if (!layer) return;
     layer.clearLayers();
     nearbyDrivers.forEach((driver) => {
-      L.marker([driver.lat, driver.lng], { icon: carIcon }).addTo(layer);
+      const marker = L.marker([driver.lat, driver.lng], { icon: carIcon });
+      const duration = formatOnlineDuration(driver.onlineSince);
+      const html = driver.popupHtml ?? `
+        <div style="min-width:200px;font-family:inherit;text-align:right" dir="rtl">
+          <div style="font-weight:700;font-size:14px;color:#0f172a;margin-bottom:4px">${driver.name ?? "سائق"}</div>
+          ${driver.rating != null ? `<div style="font-size:12px;color:#b45309">★ ${Number(driver.rating).toFixed(1)}</div>` : ""}
+          ${duration ? `<div style="font-size:12px;color:#047857;margin-top:4px">⏱ في العمل منذ ${duration}</div>` : ""}
+          <div style="font-size:10px;color:#475569;font-family:monospace;margin-top:4px;word-break:break-all"><span style="color:#94a3b8">ID:</span> ${driver.id}</div>
+          <div style="font-size:11px;color:#64748b;font-family:monospace;margin-top:2px">${driver.lat.toFixed(5)}, ${driver.lng.toFixed(5)}</div>
+        </div>`;
+      marker.bindPopup(html);
+      marker.on("click", () => {
+        marker.openPopup();
+        onDriverMarkerClick?.(driver.id);
+      });
+      marker.addTo(layer);
     });
-  }, [nearbyDrivers]);
+  }, [nearbyDrivers, onDriverMarkerClick]);
 
   // Heatmap circles
   useEffect(() => {

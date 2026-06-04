@@ -73,13 +73,16 @@ sudo systemctl start hn-webhook
 echo "[6/6] Configuring Nginx..."
 sudo tee /etc/nginx/sites-available/hn-driver > /dev/null << 'NGINX'
 # ═══════════════════════════════════════════════════════════
-# Supports BOTH hn-driver.com AND hn-driver.net
+# Supports BOTH hn-driver.com AND hndriver.company (+ legacy .net)
+# Each subdomain listens on all three domains in parallel.
 # ═══════════════════════════════════════════════════════════
 
 # ─── Main App ───
 server {
     listen 80;
-    server_name hn-driver.com www.hn-driver.com hn-driver.net www.hn-driver.net;
+    server_name hn-driver.com www.hn-driver.com
+                hndriver.company www.hndriver.company
+                hn-driver.net www.hn-driver.net;
     root /var/www/html;
     index index.html;
     location / { try_files $uri $uri/ /index.html; }
@@ -93,7 +96,7 @@ server {
 # ─── Admin Panel ───
 server {
     listen 80;
-    server_name admin.hn-driver.com admin.hn-driver.net;
+    server_name admin.hn-driver.com admin.hndriver.company admin.hn-driver.net;
     root /var/www/admin;
     index admin.html;
     location / { try_files $uri $uri/ /admin.html; }
@@ -107,7 +110,7 @@ server {
 # ─── Call Center ───
 server {
     listen 80;
-    server_name call.hn-driver.com call.hn-driver.net;
+    server_name call.hn-driver.com call.hndriver.company call.hn-driver.net;
     root /var/www/call-center;
     index call-center.html;
     location / { try_files $uri $uri/ /call-center.html; }
@@ -121,7 +124,7 @@ server {
 # ─── Supervisor ───
 server {
     listen 80;
-    server_name supervisor.hn-driver.com supervisor.hn-driver.net;
+    server_name supervisor.hn-driver.com supervisor.hndriver.company supervisor.hn-driver.net;
     root /var/www/supervisor;
     index supervisor.html;
     location / { try_files $uri $uri/ /supervisor.html; }
@@ -132,10 +135,39 @@ server {
     gzip_types text/plain text/css application/json application/javascript text/xml application/xml text/javascript image/svg+xml;
 }
 
+# ─── Client ───
+server {
+    listen 80;
+    server_name client.hn-driver.com client.hndriver.company;
+    root /var/www/html;
+    index index.html;
+    location = / { return 302 /customer; }
+    location / { try_files $uri $uri/ /index.html; }
+    location ~* \.(js|css|png|jpg|jpeg|gif|ico|svg|woff2|woff|ttf)$ {
+        expires 1y; add_header Cache-Control "public, immutable";
+    }
+    gzip on;
+    gzip_types text/plain text/css application/json application/javascript text/xml application/xml text/javascript image/svg+xml;
+}
+
+# ─── Driver (generic) ───
+server {
+    listen 80;
+    server_name driver.hn-driver.com driver.hndriver.company;
+    root /var/www/driver-ride;
+    index driver-ride.html;
+    location / { try_files $uri $uri/ /driver-ride.html; }
+    location ~* \.(js|css|png|jpg|jpeg|gif|ico|svg|woff2|woff|ttf)$ {
+        expires 1y; add_header Cache-Control "public, immutable";
+    }
+    gzip on;
+    gzip_types text/plain text/css application/json application/javascript text/xml application/xml text/javascript image/svg+xml;
+}
+
 # ─── Driver Ride ───
 server {
     listen 80;
-    server_name ride.hn-driver.com;
+    server_name ride.hn-driver.com ride.hndriver.company;
     root /var/www/driver-ride;
     index driver-ride.html;
     location / { try_files $uri $uri/ /driver-ride.html; }
@@ -149,10 +181,24 @@ server {
 # ─── Driver Delivery ───
 server {
     listen 80;
-    server_name delivery.hn-driver.com;
+    server_name delivery.hn-driver.com delivery.hndriver.company;
     root /var/www/driver-delivery;
     index driver-delivery.html;
     location / { try_files $uri $uri/ /driver-delivery.html; }
+    location ~* \.(js|css|png|jpg|jpeg|gif|ico|svg|woff2|woff|ttf)$ {
+        expires 1y; add_header Cache-Control "public, immutable";
+    }
+    gzip on;
+    gzip_types text/plain text/css application/json application/javascript text/xml application/xml text/javascript image/svg+xml;
+}
+
+# ─── HN Stock ───
+server {
+    listen 80;
+    server_name stock.hn-driver.com stock.hndriver.company;
+    root /var/www/hn-stock;
+    index index.html;
+    location / { try_files $uri $uri/ /index.html; }
     location ~* \.(js|css|png|jpg|jpeg|gif|ico|svg|woff2|woff|ttf)$ {
         expires 1y; add_header Cache-Control "public, immutable";
     }
@@ -170,14 +216,26 @@ echo "════════════════════════�
 echo "  ✅ Server setup complete!"
 echo ""
 echo "  Next steps:"
-echo "  1. Go to GitHub → Repo Settings → Webhooks → Add webhook"
+echo "  1. GitHub → Repo Settings → Webhooks → Add webhook"
 echo "     URL: http://YOUR_SERVER_IP:9000/hooks/deploy"
 echo "     Secret: $WEBHOOK_SECRET"
-echo "     Events: Just the push event"
+echo "     Events: push event only"
 echo ""
-echo "  2. Setup SSL (BOTH domains):"
-echo "     sudo apt install certbot python3-certbot-nginx"
-echo "     sudo certbot --nginx -d hn-driver.com -d www.hn-driver.com -d admin.hn-driver.com -d call.hn-driver.com -d supervisor.hn-driver.com -d hn-driver.net -d www.hn-driver.net -d admin.hn-driver.net -d call.hn-driver.net -d supervisor.hn-driver.net"
+echo "  2. Add DNS A records (BOTH domains → server IP 213.156.132.166):"
+echo "     hn-driver.com:    @ www admin call client delivery driver ride supervisor stock"
+echo "     hndriver.company: @ www admin call client delivery driver ride supervisor stock"
 echo ""
-echo "  3. Add DNS A records pointing to your server IP"
+echo "  3. Install SSL for BOTH domains:"
+echo "     sudo apt install certbot python3-certbot-nginx -y"
+echo "     sudo certbot --nginx \\"
+echo "       -d hn-driver.com -d www.hn-driver.com \\"
+echo "       -d admin.hn-driver.com -d call.hn-driver.com \\"
+echo "       -d client.hn-driver.com -d delivery.hn-driver.com \\"
+echo "       -d driver.hn-driver.com -d ride.hn-driver.com \\"
+echo "       -d supervisor.hn-driver.com -d stock.hn-driver.com \\"
+echo "       -d hndriver.company -d www.hndriver.company \\"
+echo "       -d admin.hndriver.company -d call.hndriver.company \\"
+echo "       -d client.hndriver.company -d delivery.hndriver.company \\"
+echo "       -d driver.hndriver.company -d ride.hndriver.company \\"
+echo "       -d supervisor.hndriver.company -d stock.hndriver.company"
 echo "═══════════════════════════════════════"

@@ -1,12 +1,18 @@
-ضع ملف Android النهائي هنا بهذا الاسم لتفعيل زر التحميل الحقيقي:
+HN Driver — Downloads
+=====================
 
-- smooth-route-guide-android.apk
+📱 تطبيقات Android (APK):  /downloads/apps/
+🖥️  تطبيقات Windows (EXE): /downloads/desktop/
 
-أوامر Android:
-1) npm install
-2) npm run native:android
-3) npx cap add android   (مرة واحدة فقط إذا لم يكن مجلد android موجوداً)
-4) npx cap open android
-5) من Android Studio: Build > Build APK(s)
+الأسماء الرسمية الوحيدة:
+- hn-general.apk    (عام)
+- hn-admin.apk      (أدمن)
+- hn-callcenter.apk (كول سنتر)
+- hn-client.apk     (زبون)
+- hn-delivery.apk   (توصيل)
+- hn-driver.apk     (سائق)
+- hn-store.apk      (متجر / مطعم)
 
-بعد توليد APK انسخه إلى هذا المجلد ثم انشر الواجهة ليظهر زر التحميل الحقيقي.
+طريقة البناء:
+  bash scripts/build-apk.sh <role>
+  bash scripts/build-desktop-windows.sh

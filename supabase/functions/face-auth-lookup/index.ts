@@ -40,6 +40,22 @@ Deno.serve(async (req) => {
   }
 
   try {
+    // Require authentication — prevents anonymous notification spam & email enumeration
+    const authHeader = req.headers.get("Authorization");
+    if (!authHeader) {
+      throw new HttpError(401, "unauthorized");
+    }
+
+    const userClient = createClient(
+      Deno.env.get("SUPABASE_URL")!,
+      Deno.env.get("SUPABASE_ANON_KEY")!,
+      { global: { headers: { Authorization: authHeader } }, auth: { persistSession: false } }
+    );
+    const { data: { user }, error: userErr } = await userClient.auth.getUser();
+    if (userErr || !user) {
+      throw new HttpError(401, "unauthorized");
+    }
+
     // Rate limit by IP/auth identifier — prevents enumeration & spam
     await enforceRateLimit(req, "face-auth-lookup", 10, 60);
 
@@ -62,15 +78,11 @@ Deno.serve(async (req) => {
         result: "rejected",
       });
 
-      const { data: profile } = await supabase
-        .from("profiles")
-        .select("id")
-        .eq("email", normalizedEmail)
-        .maybeSingle();
-
-      if (profile) {
+      // Only notify the user if the attempted email matches the caller's own email.
+      // This prevents an attacker from spamming notifications to arbitrary inboxes.
+      if (user.email && user.email.toLowerCase() === normalizedEmail) {
         await supabase.from("notifications").insert({
-          user_id: profile.id,
+          user_id: user.id,
           type: "security",
           message:
             "⚠️ محاولة دخول غير مصرح بها إلى حسابك. شخص غير معروف حاول تسجيل الدخول.",

@@ -74,10 +74,13 @@ export const ALL_DOMAINS = ["hn-driver.com", "hn-driver.net", "hn-driver.online"
  * Order matters: hndriver.company is the Lovable-managed primary (paid 1y).
  */
 export const APK_DOMAIN_PRIORITY = [
-  "https://hndriver.company",
   "https://www.hn-driver.com",
+  "https://www.hndriver.company",
   "https://www.hn-driver.net",
 ] as const;
+
+export const PRIMARY_DOMAIN = "hn-driver.com";
+export const FALLBACK_DOMAIN = "hndriver.company";
 
 /** Main pages with their full URLs — useful for sitemaps, sharing, etc. */
 export const MAIN_PAGES = {

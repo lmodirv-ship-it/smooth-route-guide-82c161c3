@@ -384,12 +384,15 @@ const Footer = () => (
     </div>
 
     {/* Bottom bar */}
-    <div className="max-w-7xl mx-auto mt-10 pt-6 border-t border-white/5 flex flex-col sm:flex-row items-center justify-between text-gray-500 text-xs">
-      <span>© 2026 hn-driver.site — جميع الحقوق محفوظة</span>
-      <div className="flex items-center gap-2 mt-2 sm:mt-0">
+    <div className="max-w-7xl mx-auto mt-10 pt-6 border-t border-white/5 flex flex-col sm:flex-row items-center justify-between text-gray-500 text-xs gap-3">
+      <span>© 2026 hn-driver.site — جميع الحقوق محفوظة el hassani moulay ismail. groupe hn</span>
+      <div className="flex items-center gap-4">
+        <a href="/terms" className="hover:text-emerald-400 transition">الشروط والأحكام</a>
+        <a href="/privacy" className="hover:text-emerald-400 transition">سياسة الخصوصية</a>
+      </div>
+      <div className="flex items-center gap-2">
         <span className="w-2 h-2 rounded-full bg-emerald-500" />
         <span>النظام يعمل بشكل طبيعي</span>
-        <span className="mr-2">hn-driver.site</span>
       </div>
     </div>
   </footer>

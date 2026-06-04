@@ -5,14 +5,32 @@
  */
 
 export const APK_DOMAIN_PRIORITY = [
-  "https://hndriver.company",      // 🟢 PRIMARY (Lovable, paid 1y)
-  "https://www.hn-driver.com",     // Backup 1
-  "https://www.hn-driver.net",     // Backup 2
+  "https://www.hn-driver.com",     // 🟢 PRIMARY (VPS)
+  "https://www.hndriver.company",  // Fallback (Lovable-managed)
+  "https://www.hn-driver.net",     // Backup
 ] as const;
 
+/**
+ * Per-subdomain failover pairs.
+ * Each APK uses the matching key (set via VITE_APK_ROLE at build time
+ * or detected from current hostname).
+ */
+export const APK_SUBDOMAIN_FAILOVER: Record<string, string[]> = {
+  main:       ["https://www.hn-driver.com",       "https://www.hndriver.company"],
+  admin:      ["https://admin.hn-driver.com",     "https://admin.hndriver.company"],
+  call:       ["https://call.hn-driver.com",      "https://call.hndriver.company"],
+  callcenter: ["https://call.hn-driver.com",      "https://call.hndriver.company"],
+  client:     ["https://client.hn-driver.com",    "https://client.hndriver.company"],
+  delivery:   ["https://delivery.hn-driver.com",  "https://delivery.hndriver.company"],
+  driver:     ["https://driver.hn-driver.com",    "https://driver.hndriver.company"],
+  ride:       ["https://ride.hn-driver.com",      "https://ride.hndriver.company"],
+  supervisor: ["https://supervisor.hn-driver.com","https://supervisor.hndriver.company"],
+  stock:      ["https://stock.hn-driver.com",     "https://stock.hndriver.company"],
+};
+
 const CACHE_KEY = "hn_apk_active_domain";
-const CACHE_TTL_MS = 24 * 60 * 60 * 1000; // 24h
-const PROBE_TIMEOUT_MS = 4000;
+const CACHE_TTL_MS = 5 * 60 * 1000; // 5 min (faster failover recovery)
+const PROBE_TIMEOUT_MS = 3000;
 
 interface CachedDomain {
   url: string;
@@ -60,11 +78,13 @@ export const clearCachedDomain = () => {
 };
 
 /** Returns the first reachable domain (or null if all fail). */
-export const findActiveDomain = async (): Promise<string | null> => {
+export const findActiveDomain = async (
+  priority: readonly string[] = APK_DOMAIN_PRIORITY,
+): Promise<string | null> => {
   const cached = getCachedDomain();
-  if (cached && await probe(cached)) return cached;
+  if (cached && priority.includes(cached) && await probe(cached)) return cached;
 
-  for (const url of APK_DOMAIN_PRIORITY) {
+  for (const url of priority) {
     if (await probe(url)) {
       setCachedDomain(url);
       return url;
@@ -72,3 +92,7 @@ export const findActiveDomain = async (): Promise<string | null> => {
   }
   return null;
 };
+
+/** Find the active domain for a specific sub-app role (admin, client, driver, ...). */
+export const findActiveDomainForRole = (role: keyof typeof APK_SUBDOMAIN_FAILOVER) =>
+  findActiveDomain(APK_SUBDOMAIN_FAILOVER[role] ?? APK_DOMAIN_PRIORITY);

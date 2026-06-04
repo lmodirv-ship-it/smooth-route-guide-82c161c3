@@ -187,7 +187,7 @@ const AdminLayout = () => {
           onClick={() => setSidebarNavVisible(v => !v)}
           className="p-4 flex items-center gap-3 border-b border-border w-full hover:bg-secondary/50 transition-colors cursor-pointer"
         >
-          <img src={logo} alt="HN" className="w-10 h-10 flex-shrink-0 rounded-xl shadow-md" />
+          <a href="/" aria-label="Home"><img src={logo} alt="HN" className="w-10 h-10 flex-shrink-0 rounded-xl shadow-md cursor-pointer" /></a>
           {!sidebarCollapsed && (
             <>
               <div className="flex flex-col items-start">
@@ -255,7 +255,7 @@ const AdminLayout = () => {
                 <X className="w-5 h-5 text-muted-foreground" />
               </button>
               <div className="flex items-center gap-2">
-                <img src={logo} alt="HN" className="w-8 h-8" />
+                <a href="/" aria-label="Home"><img src={logo} alt="HN" className="w-8 h-8 cursor-pointer" /></a>
                 <span className="font-bold text-gradient-primary font-display">{t.admin.panelTitle}</span>
               </div>
             </div>

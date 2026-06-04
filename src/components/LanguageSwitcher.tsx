@@ -21,7 +21,7 @@ export default function LanguageSwitcher({ variant = "ghost" }: { variant?: "gho
           </span>
         </Button>
       </DropdownMenuTrigger>
-      <DropdownMenuContent align="end">
+      <DropdownMenuContent align="end" className="z-[100]">
         {locales.map((l) => (
           <DropdownMenuItem
             key={l.code}

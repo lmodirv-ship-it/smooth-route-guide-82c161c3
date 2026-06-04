@@ -165,7 +165,8 @@ const Welcome = () => {
           <motion.img
             src={logo}
             alt="HN Driver"
-            className="w-48 h-48 rounded-full object-cover border-4 border-primary/30 shadow-2xl relative z-10"
+            onClick={() => navigate("/")}
+            className="w-48 h-48 rounded-full object-cover border-4 border-primary/30 shadow-2xl relative z-10 cursor-pointer"
             animate={{
               scale: [1, 1.04, 1],
               boxShadow: [

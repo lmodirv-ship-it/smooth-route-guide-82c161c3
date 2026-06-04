@@ -1,1168 +1,305 @@
-import { useI18n } from "@/i18n/context";
-import LanguageSwitcher from "@/components/LanguageSwitcher";
-import VisitorCounter from "@/components/VisitorCounter";
-import { useNavigate } from "react-router-dom";
-import { dashboardForRole } from "@/lib/routes";
-import { supabase } from "@/integrations/supabase/client";
-import { motion } from "framer-motion";
-import { useState, useEffect } from "react";
+import { Link } from "react-router-dom";
 import {
-  Car, Package, BarChart3, Zap, Shield, DollarSign, MapPin, ArrowRight, Menu, X,
-  Users, Truck, Headphones, Store, Coffee, Shirt, Croissant, ShoppingCart,
-  UtensilsCrossed, Printer, Smartphone, Clock, Download, Star, Phone,
-  ChevronDown, Globe, PlayCircle, UserPlus, FileCheck, Quote, ChevronUp,
-  MessageSquare, HelpCircle, CheckCircle, LogIn, PlusCircle, Pill, Wrench,
+  Bike,
+  Car,
+  ChevronDown,
+  ChevronLeft,
+  Globe,
+  Headphones,
+  LogIn,
+  ShieldCheck,
+  Smartphone,
+  Store,
+  UserPlus,
+  Users,
 } from "lucide-react";
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { Button } from "@/components/ui/button";
-import { lovable } from "@/integrations/lovable/index";
-import { toast } from "@/hooks/use-toast";
-import { trackEvent } from "@/components/TrackingScripts";
-import CinematicParticles from "@/components/CinematicParticles";
-import GlobalContactFooter from "@/components/GlobalContactFooter";
-import AdsSection from "@/components/AdsSection";
-import SignupBanner from "@/components/SignupBanner";
-// VisitorCounter already imported above
-import HeroPromoFlash from "@/components/HeroPromoFlash";
-import TangierSocialProof from "@/components/TangierSocialProof";
-import VideoShowcaseSection from "@/components/VideoShowcaseSection";
-import FreePeriodHeroBanner from "@/components/FreePeriodHeroBanner";
-import ApkDownloadHero from "@/components/ApkDownloadHero";
-import LaunchPromoBanner from "@/components/LaunchPromoBanner";
-import StickyCTABar from "@/components/StickyCTABar";
-import logo from "@/assets/hn-driver-badge.png";
-import iconVtcCar from "@/assets/icon-vtc-car-hn.png";
-import iconDeliveryBike from "@/assets/icon-delivery-bike-hn.png";
-import iconStoreMarketplace from "@/assets/icon-store-marketplace.png";
-import iconRestaurant from "@/assets/icon-restaurant.png";
-import iconClientApp from "@/assets/icon-client-app.png";
-import iconCoupleWelcome from "@/assets/icon-couple-welcome.png";
-import partnerHibaEco from "@/assets/partner-hiba-eco.png";
-import partnerLavageNizar from "@/assets/partner-lavage-nizar.png";
-import partnerTanjaPrint from "@/assets/partner-tanja-print.png";
-import partnerSlavacall from "@/assets/partner-slavacall.png";
-import projHnDriver from "@/assets/project-hn-driver.png";
-import projSoukHn from "@/assets/project-souk-hn.png";
-import projHnPrint from "@/assets/project-hn-print.png";
-import projGtStudio from "@/assets/project-gt-studio.png";
-import projAiScene from "@/assets/project-ai-scene.png";
-import projAiVision from "@/assets/project-ai-vision.png";
-import projCloud from "@/assets/project-cloud.png";
-import projAiVideo from "@/assets/project-ai-video.png";
-import projLivraisonExpress from "@/assets/project-livraison-express.jpg";
-import { HN_PROJECTS } from "@/data/hnGroupeProjects";
-import { screenshotUrl } from "@/lib/screenshotUrl";
-import * as LucideIcons from "lucide-react";
+import PageMeta from "@/components/PageMeta";
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
+import { useI18n } from "@/i18n/context";
+import heroBg from "@/assets/landing-hero-bg.jpg";
+import phoneMockup from "@/assets/hn-driver-logo-v2.jpeg";
+import hnLogo from "@/assets/hn-driver-logo.png";
+import cardCar from "@/assets/card-car.png";
+import cardCustomer from "@/assets/card-customer.png";
+import cardDelivery from "@/assets/card-delivery.png";
+import cardStore from "@/assets/card-store.png";
 
-type DbPartnerSite = {
-  id: string;
-  slug: string;
-  name_ar: string;
-  name_en: string;
-  description_ar: string;
-  description_en: string;
-  url: string;
-  tags: string[];
-  status: string;
-  is_featured: boolean;
-  sort_order: number;
-  custom_screenshot_url: string | null;
-  icon_name: string;
-  gradient: string;
-  rating: number;
-  users_label: string;
+type LandingContent = {
+  meta: { title: string; description: string; keywords: string };
+  topLinks: { contact: string; features: string; pricing: string; services: string; whyHn: string };
+  actions: { login: string; signup: string };
+  trust: { safeTitle: string; safeSub: string; supportSub: string };
+  hero: { title1: string; title2: string; subtitle: string };
+  cards: { driver: [string, string]; client: [string, string]; delivery: [string, string]; store: [string, string] };
+  registerNow: string;
+  downloadApk: string;
+  adminApksLabel: string;
+  adminApks: { general: string; admin: string; callcenter: string };
+  stats: { active: string; drivers: string; delivery: string; stores: string };
+  download: { title: string; sub: string };
 };
 
-const fadeUp = {
-  hidden: { opacity: 0, y: 30 },
-  visible: (i: number) => ({ opacity: 1, y: 0, transition: { delay: i * 0.12, duration: 0.6, ease: "easeOut" as const } }),
+const content: Record<string, LandingContent> = {
+  ar: {
+    meta: {
+      title: "HN Driver — كل خدمات التوصيل في مكان واحد",
+      description: "سجّل الآن واختر نوع الحساب: سائق، زبون، عامل توصيل، أو صاحب متجر.",
+      keywords: "HN Driver, توصيل, سائق, زبون, متجر, مطعم",
+    },
+    topLinks: { contact: "تواصل معنا", features: "مزايا التطبيق", pricing: "الأسعار", services: "الخدمات", whyHn: "لماذا HN Driver" },
+    actions: { login: "تسجيل الدخول", signup: "إنشاء حساب" },
+    trust: { safeTitle: "آمن وموثوق", safeSub: "حماية بياناتك", supportSub: "دعم فني دائم" },
+    hero: { title1: "كل خدمات التوصيل", title2: "في مكان واحد", subtitle: "سجّل الآن واختر نوع الحساب وابدأ العمل معنا" },
+    cards: {
+      driver: ["تسجيل سائق", "انضم كسائق واكسب المال مع مرونة في أوقات العمل"],
+      client: ["تسجيل زبون", "اطلب رحلتك وطلباتك بسهولة وأمان"],
+      delivery: ["تسجيل عامل توصيل", "ابدأ التوصيل وحقق دخلاً إضافياً بوقت يناسبك"],
+      store: ["تسجيل مطعم أو متجر", "وسّع عملك واستقبل الطلبات من آلاف العملاء"],
+    },
+    registerNow: "سجّل الآن",
+    downloadApk: "تحميل APK",
+    adminApksLabel: "تطبيقات إدارية:",
+    adminApks: { general: "تطبيق عام", admin: "أدمن", callcenter: "مركز الاتصال" },
+    stats: { active: "مستخدم نشط", drivers: "سائق", delivery: "عامل توصيل", stores: "مطعم و متجر" },
+    download: { title: "حمّل التطبيق هنا", sub: "متوفر لأندرويد — APK مباشر" },
+  },
+  fr: {
+    meta: {
+      title: "HN Driver — Tous les services de livraison en un seul endroit",
+      description: "Inscrivez-vous et choisissez votre compte : chauffeur, client, livreur ou commerçant.",
+      keywords: "HN Driver, livraison, chauffeur, client, magasin, restaurant",
+    },
+    topLinks: { contact: "Contactez-nous", features: "Fonctionnalités", pricing: "Tarifs", services: "Services", whyHn: "Pourquoi HN Driver" },
+    actions: { login: "Connexion", signup: "Créer un compte" },
+    trust: { safeTitle: "Sûr et fiable", safeSub: "Vos données protégées", supportSub: "Support permanent" },
+    hero: { title1: "Tous les services de livraison", title2: "en un seul endroit", subtitle: "Inscrivez-vous, choisissez votre compte et commencez avec nous" },
+    cards: {
+      driver: ["Inscription chauffeur", "Rejoignez-nous et gagnez de l'argent avec des horaires flexibles"],
+      client: ["Inscription client", "Commandez vos trajets et livraisons en toute simplicité"],
+      delivery: ["Inscription livreur", "Démarrez la livraison et gagnez un revenu supplémentaire"],
+      store: ["Inscription restaurant/magasin", "Développez votre business et recevez des milliers de commandes"],
+    },
+    registerNow: "S'inscrire",
+    downloadApk: "Télécharger APK",
+    adminApksLabel: "Applications administratives :",
+    adminApks: { general: "Application générale", admin: "Admin", callcenter: "Centre d'appels" },
+    stats: { active: "utilisateurs actifs", drivers: "chauffeurs", delivery: "livreurs", stores: "restaurants & magasins" },
+    download: { title: "Téléchargez l'application", sub: "Disponible sur Android — APK direct" },
+  },
+  en: {
+    meta: {
+      title: "HN Driver — All delivery services in one place",
+      description: "Sign up and choose your account: driver, customer, delivery worker, or store owner.",
+      keywords: "HN Driver, delivery, driver, customer, store, restaurant",
+    },
+    topLinks: { contact: "Contact us", features: "Features", pricing: "Pricing", services: "Services", whyHn: "Why HN Driver" },
+    actions: { login: "Sign in", signup: "Create account" },
+    trust: { safeTitle: "Safe & trusted", safeSub: "Your data protected", supportSub: "Always-on support" },
+    hero: { title1: "All delivery services", title2: "in one place", subtitle: "Sign up, choose your account and start working with us" },
+    cards: {
+      driver: ["Driver sign up", "Join as a driver and earn money with flexible hours"],
+      client: ["Customer sign up", "Order your rides and deliveries easily and safely"],
+      delivery: ["Delivery sign up", "Start delivering and earn extra income on your schedule"],
+      store: ["Restaurant/store sign up", "Grow your business and receive thousands of orders"],
+    },
+    registerNow: "Sign up now",
+    downloadApk: "Download APK",
+    adminApksLabel: "Admin apps:",
+    adminApks: { general: "General app", admin: "Admin", callcenter: "Call center" },
+    stats: { active: "active users", drivers: "drivers", delivery: "delivery workers", stores: "restaurants & stores" },
+    download: { title: "Download the app", sub: "Available on Android — direct APK" },
+  },
+  es: {
+    meta: {
+      title: "HN Driver — Todos los servicios de entrega en un solo lugar",
+      description: "Regístrate y elige tu cuenta: conductor, cliente, repartidor o comerciante.",
+      keywords: "HN Driver, entrega, conductor, cliente, tienda, restaurante",
+    },
+    topLinks: { contact: "Contáctanos", features: "Características", pricing: "Precios", services: "Servicios", whyHn: "Por qué HN Driver" },
+    actions: { login: "Iniciar sesión", signup: "Crear cuenta" },
+    trust: { safeTitle: "Seguro y confiable", safeSub: "Tus datos protegidos", supportSub: "Soporte permanente" },
+    hero: { title1: "Todos los servicios de entrega", title2: "en un solo lugar", subtitle: "Regístrate, elige tu cuenta y empieza con nosotros" },
+    cards: {
+      driver: ["Registro de conductor", "Únete como conductor y gana dinero con horarios flexibles"],
+      client: ["Registro de cliente", "Pide tus viajes y entregas de forma fácil y segura"],
+      delivery: ["Registro de repartidor", "Empieza a repartir y gana ingresos extra a tu ritmo"],
+      store: ["Registro de restaurante/tienda", "Haz crecer tu negocio y recibe miles de pedidos"],
+    },
+    registerNow: "Regístrate",
+    downloadApk: "Descargar APK",
+    adminApksLabel: "Aplicaciones administrativas:",
+    adminApks: { general: "App general", admin: "Admin", callcenter: "Centro de llamadas" },
+    stats: { active: "usuarios activos", drivers: "conductores", delivery: "repartidores", stores: "restaurantes y tiendas" },
+    download: { title: "Descarga la app", sub: "Disponible en Android — APK directo" },
+  },
 };
 
-const scaleIn = {
-  hidden: { opacity: 0, scale: 0.8 },
-  visible: { opacity: 1, scale: 1, transition: { duration: 0.8, ease: "easeOut" as const } },
-};
+const LandingPage = () => {
+  const { locale, setLocale, locales, dir } = useI18n();
+  const currentLocale = locales.find((item) => item.code === locale) ?? locales[0];
+  const c = content[locale] ?? content.ar;
 
-const stagger = {
-  hidden: {},
-  visible: { transition: { staggerChildren: 0.1 } },
-};
-
-const fadeChild = {
-  hidden: { opacity: 0, y: 20 },
-  visible: { opacity: 1, y: 0, transition: { duration: 0.5 } },
-};
-
-const FAQItem = ({ question, answer, index }: { question: string; answer: string; index: number }) => {
-  const [open, setOpen] = useState(false);
-  return (
-    <motion.div initial="hidden" whileInView="visible" viewport={{ once: true }} variants={fadeUp} custom={index + 1}>
-      <button onClick={() => setOpen(!open)} className="w-full flex items-center justify-between gap-4 p-5 rounded-2xl glass-card hover:border-primary/30 transition-all duration-300 text-start group">
-        <span className="font-bold text-foreground group-hover:text-primary transition-colors">{question}</span>
-        <ChevronDown className={`w-5 h-5 text-muted-foreground flex-shrink-0 transition-transform duration-300 ${open ? "rotate-180" : ""}`} />
-      </button>
-      {open && (
-        <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: "auto" }} className="px-5 pb-4 pt-2 text-sm text-muted-foreground leading-relaxed">
-          {answer}
-        </motion.div>
-      )}
-    </motion.div>
-  );
-};
-
-export default function LandingPage() {
-  const { t, dir } = useI18n();
-  const navigate = useNavigate();
-  const [menuOpen, setMenuOpen] = useState(false);
-  const [scrolled, setScrolled] = useState(false);
-  const [storeDialogOpen, setStoreDialogOpen] = useState(false);
-  const [dbPartnerSites, setDbPartnerSites] = useState<DbPartnerSite[]>([]);
-  const lt = t.landing;
-
-  // Auto-redirect logged-in users to their dashboard
-  useEffect(() => {
-    const checkAuth = async () => {
-      const { data: { session } } = await supabase.auth.getSession();
-      if (!session) return;
-      const { data: roles } = await supabase.from("user_roles").select("role").eq("user_id", session.user.id);
-      const firstRole = (roles || [])[0]?.role;
-      if (firstRole) {
-        navigate(dashboardForRole(firstRole), { replace: true });
-      }
-    };
-    checkAuth();
-  }, [navigate]);
-
-  useEffect(() => {
-    const onScroll = () => setScrolled(window.scrollY > 40);
-    window.addEventListener("scroll", onScroll, { passive: true });
-    return () => window.removeEventListener("scroll", onScroll);
-  }, []);
-
-  // Load partner sites from DB (admin-managed)
-  useEffect(() => {
-    const load = async () => {
-      const { data } = await supabase
-        .from("partner_sites")
-        .select("*")
-        .eq("is_visible", true)
-        .neq("status", "hidden")
-        .order("sort_order", { ascending: true });
-      if (data) setDbPartnerSites(data as DbPartnerSite[]);
-    };
-    load();
-    const ch = supabase
-      .channel("partner_sites_public")
-      .on("postgres_changes", { event: "*", schema: "public", table: "partner_sites" }, load)
-      .subscribe();
-    return () => { supabase.removeChannel(ch); };
-  }, []);
-
-  const services = [
-    { icon: Car, title: lt.rideTitle, desc: lt.rideDesc, glow: "glow-ring-orange" },
-    { icon: Package, title: lt.deliveryTitle, desc: lt.deliveryDesc, glow: "glow-ring-blue" },
-    { icon: BarChart3, title: lt.businessTitle, desc: lt.businessDesc, glow: "glow-ring-orange" },
+  const cards = [
+    { to: "/auth/driver", title: c.cards.driver[0], text: c.cards.driver[1], image: cardCar, variant: "blue", apk: "/downloads/apps/hn-driver.apk" },
+    { to: "/auth/client", title: c.cards.client[0], text: c.cards.client[1], image: cardCustomer, variant: "green", apk: "/downloads/apps/hn-client.apk" },
+    { to: "/auth/delivery", title: c.cards.delivery[0], text: c.cards.delivery[1], image: cardDelivery, variant: "purple", apk: "/downloads/apps/hn-delivery.apk" },
+    { to: "/auth/store_owner", title: c.cards.store[0], text: c.cards.store[1], image: cardStore, variant: "gold", apk: "/downloads/apps/hn-store.apk" },
   ];
 
-  const advancedFeatures = [
-    { icon: MapPin, title: dir === "rtl" ? "تتبع GPS مباشر" : "Live GPS Tracking", desc: dir === "rtl" ? "تتبع موقع السائقين في الوقت الفعلي مع دقة عالية وتحديثات فورية" : "Track driver locations in real-time with high accuracy", color: "text-info" },
-    { icon: Clock, title: dir === "rtl" ? "إدارة الوقت الذكية" : "Smart Time Management", desc: dir === "rtl" ? "جدولة الرحلات وتتبع ساعات العمل وإدارة الإجازات تلقائياً" : "Schedule trips, track hours, manage shifts automatically", color: "text-success" },
-    { icon: BarChart3, title: dir === "rtl" ? "تقارير وتحليلات" : "Reports & Analytics", desc: dir === "rtl" ? "لوحة تحكم شاملة مع تقارير مفصلة عن الأداء والإيرادات" : "Comprehensive dashboard with detailed performance reports", color: "text-[hsl(var(--warning))]" },
-    { icon: Shield, title: dir === "rtl" ? "أمان متقدم" : "Advanced Security", desc: dir === "rtl" ? "تشفير البيانات ومصادقة ثنائية وحماية كاملة للخصوصية" : "Data encryption, two-factor auth, full privacy protection", color: "text-destructive" },
-    { icon: Smartphone, title: dir === "rtl" ? "تطبيق موبايل سهل" : "Easy Mobile App", desc: dir === "rtl" ? "واجهة بسيطة وسريعة للسائقين على iOS و Android" : "Simple, fast interface for drivers on iOS & Android", color: "text-primary" },
-    { icon: Zap, title: dir === "rtl" ? "أداء فائق السرعة" : "Blazing Fast Performance", desc: dir === "rtl" ? "استجابة فورية وتحميل سريع وتجربة مستخدم سلسة" : "Instant response, fast loading, smooth UX", color: "text-[hsl(var(--warning))]" },
-  ];
-
-  const whyFeatures = [
-    { icon: Zap, title: lt.why1Title, desc: lt.why1Desc },
-    { icon: Shield, title: lt.why2Title, desc: lt.why2Desc },
-    { icon: DollarSign, title: lt.why3Title, desc: lt.why3Desc },
-    { icon: MapPin, title: lt.why4Title, desc: lt.why4Desc },
-  ];
-
-  const serviceCategories = [
-    { key: "shops", icon: Store, label: lt.catShops },
-    { key: "cafes", icon: Coffee, label: lt.catCafes },
-    { key: "clothing", icon: Shirt, label: lt.catClothing },
-    { key: "bakeries", icon: Croissant, label: lt.catBakeries },
-    { key: "online-stores", icon: ShoppingCart, label: lt.catOnlineStores },
-    { key: "restaurants", icon: UtensilsCrossed, label: lt.catRestaurants },
-    { key: "printing", icon: Printer, label: lt.catPrinting },
-  ];
-
-  const partnerSites = [
-    { name: "Hiba Eco", url: "https://www.hiba-eco.com", logo: partnerHibaEco },
-    { name: "Lavage Nizar", url: "https://www.lavagenizar.com", logo: partnerLavageNizar },
-    { name: "Tanja Print", url: "https://www.tanjaprint.com", logo: partnerTanjaPrint },
-    { name: "Slava Call Hiba", url: "https://slavacall-hiba.com", logo: partnerSlavacall },
+  const adminApks = [
+    { href: "/downloads/apps/hn-general.apk", label: c.adminApks.general },
+    { href: "/downloads/apps/hn-admin.apk", label: c.adminApks.admin },
+    { href: "/downloads/apps/hn-callcenter.apk", label: c.adminApks.callcenter },
   ];
 
   const stats = [
-    { value: "10K+", label: dir === "rtl" ? "سائق نشط" : "Active Drivers", icon: Users },
-    { value: "50K+", label: dir === "rtl" ? "رحلة يومياً" : "Daily Trips", icon: Truck },
-    { value: "4.9", label: dir === "rtl" ? "تقييم المستخدمين" : "User Rating", icon: Star },
-    { value: "24/7", label: dir === "rtl" ? "دعم متواصل" : "Support", icon: Headphones },
+    { Icon: Users, value: "+10,000", label: c.stats.active, variant: "blue" },
+    { Icon: Car, value: "+2,500", label: c.stats.drivers, variant: "green" },
+    { Icon: Bike, value: "+5,000", label: c.stats.delivery, variant: "purple" },
+    { Icon: Store, value: "+1,200", label: c.stats.stores, variant: "gold" },
   ];
 
-  const navLinks = [
-    { label: dir === "rtl" ? "الميزات" : "Features", href: "#features" },
-    { label: dir === "rtl" ? "الخدمات" : "Services", href: "#services" },
-    { label: dir === "rtl" ? "تحميل" : "Download", href: "#download" },
-    { label: dir === "rtl" ? "اتصل بنا" : "Contact", href: "#contact" },
-    { label: dir === "rtl" ? "🎁 ادعُ صديق" : "🎁 Invite", href: "/invite" },
+  const topLinks = [
+    { to: "/contact", label: c.topLinks.contact },
+    { to: "/features", label: c.topLinks.features },
+    { to: "/pricing", label: c.topLinks.pricing },
+    { to: "/services", label: c.topLinks.services },
+    { to: "/why-hn", label: c.topLinks.whyHn },
   ];
-
-  const scrollToSection = (href: string) => {
-    setMenuOpen(false);
-    if (href.startsWith("/")) {
-      navigate(href);
-      return;
-    }
-    const el = document.querySelector(href);
-    if (el) el.scrollIntoView({ behavior: "smooth" });
-  };
 
   return (
-    <div dir={dir} className="min-h-screen bg-background text-foreground overflow-x-hidden relative">
-      {/* Cinematic Particles Background */}
-      {/* Cinematic Particles Background */}
-      <CinematicParticles />
-      {/* ─── Professional Navbar ─── */}
-      <nav className={`fixed top-0 inset-x-0 z-50 transition-all duration-500 ${scrolled ? "glass-strong shadow-lg shadow-background/50" : "bg-transparent"}`}>
-        <div className={`absolute bottom-0 inset-x-0 h-px transition-opacity duration-500 bg-gradient-to-r from-transparent via-primary/50 to-transparent ${scrolled ? "opacity-100" : "opacity-0"}`} />
-        <div className="container mx-auto flex items-center justify-between h-16 px-4">
-          {/* Logo */}
-          <div className="flex items-center gap-3">
-            <div className="relative">
-              <img src={logo} alt="HN Driver" className="w-10 h-10 rounded-full border-2 border-primary/30" />
-              <div className="absolute inset-0 rounded-full bg-primary/20 blur-lg" />
-            </div>
-            <div className="flex flex-col">
-              <span className="font-display text-xl font-bold text-gradient-primary tracking-wide leading-none">
-                HN DRIVER
-              </span>
-              <span className="text-[9px] text-muted-foreground/70 tracking-[0.15em] uppercase leading-none mt-0.5">
-                {dir === "rtl" ? "نظام إدارة ذكي" : "Smart Management"}
-              </span>
-            </div>
-          </div>
+    <div className="min-h-screen gradient-dark" dir={dir}>
+      <PageMeta title={c.meta.title} description={c.meta.description} keywords={c.meta.keywords} />
 
-          {/* Desktop Nav Links — Glass bulbs with inner glow */}
-          <div className="hidden lg:flex items-center gap-3">
-            {navLinks.map((link) => (
-              <motion.button
-                key={link.href}
-                onClick={() => scrollToSection(link.href)}
-                whileHover={{ scale: 1.04, y: -2 }}
-                whileTap={{ scale: 0.97 }}
-                className="signage-3d-box min-h-0 h-12 px-6 text-sm font-bold uppercase tracking-wide text-foreground rounded-xl flex items-center justify-center"
-              >
-                <span className="relative z-10">{link.label}</span>
-              </motion.button>
+      <section className="hn-reference-hero relative h-[100svh] overflow-hidden">
+        <div className="hn-reference-bg" style={{ backgroundImage: `url(${heroBg})` }} aria-hidden />
+        <div className="hn-reference-overlay" aria-hidden />
+
+        <header className="hn-topbar">
+          <Link to="/" className="hn-brand" aria-label="HN Driver">
+            <img src={hnLogo} alt="HN Driver" className="hn-logo-img" />
+            <div className="hn-brand-text">
+              <strong>HN DRIVER</strong>
+              <span>SMART DELIVERY</span>
+            </div>
+          </Link>
+
+          <nav className="hn-nav" aria-label={c.topLinks.services}>
+            {topLinks.map((item) => (
+              <Link key={item.to} to={item.to}>{item.label}</Link>
             ))}
-          </div>
+          </nav>
 
-          {/* Desktop Actions */}
-          <div className="hidden md:flex items-center gap-3">
-            <VisitorCounter />
-            <LanguageSwitcher variant="ghost" />
-            <Button variant="outline" onClick={() => navigate("/login")} className="min-h-0 h-11 px-5 font-medium">
-              {t.common.login}
-            </Button>
-            <Button onClick={() => navigate("/auth/client")} className="min-h-0 h-11 px-6 font-bold gradient-primary text-primary-foreground glow-primary animate-pulse-glow">
-              {dir === "rtl" ? "🎉 سجّل مجاناً" : "🎉 Sign Up Free"}
-            </Button>
-          </div>
-
-          {/* Mobile Actions */}
-          <div className="md:hidden flex items-center gap-2">
-            <div className="max-w-[58vw] overflow-hidden">
-              <VisitorCounter />
-            </div>
-            <button className="text-foreground p-2 shrink-0" onClick={() => setMenuOpen(!menuOpen)}>
-              {menuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
-            </button>
-          </div>
-        </div>
-
-        {/* Mobile Menu */}
-        {menuOpen && (
-          <motion.div initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} className="md:hidden border-t border-border bg-background/98 backdrop-blur-xl px-4 py-4 flex flex-col gap-2">
-            {navLinks.map((link) => (
-              <button key={link.href} onClick={() => scrollToSection(link.href)} className="glass-nav-tile text-start py-2.5 px-3 text-sm font-medium text-foreground">
-                {link.label}
-              </button>
-            ))}
-            <div className="flex items-center justify-center py-1 md:hidden">
-              <VisitorCounter />
-            </div>
-            <div className="h-px bg-border my-2" />
-            <LanguageSwitcher variant="outline" />
-            <Button variant="outline" onClick={() => { navigate("/login"); setMenuOpen(false); }}>{t.common.login}</Button>
-            <Button onClick={() => { navigate("/auth/client"); setMenuOpen(false); }} className="font-bold gradient-primary text-primary-foreground animate-pulse-glow">{dir === "rtl" ? "🎉 سجّل مجاناً" : "🎉 Sign Up Free"}</Button>
-          </motion.div>
-        )}
-      </nav>
-
-      {/* ─── Hero Section — Masterpiece ─── */}
-      <section className="relative min-h-screen flex items-center justify-center overflow-hidden">
-        {/* Deep space background */}
-        <div className="absolute inset-0 bg-[hsl(220,20%,4%)]">
-          {/* Cosmic gradient orbs */}
-          <div className="absolute inset-0" style={{ background: "radial-gradient(ellipse 80% 60% at 50% 40%, hsl(32 95% 55% / 0.08) 0%, transparent 60%)" }} />
-          <div className="absolute inset-0" style={{ background: "radial-gradient(ellipse 60% 80% at 80% 80%, hsl(205 78% 56% / 0.05) 0%, transparent 50%)" }} />
-          <div className="absolute inset-0" style={{ background: "radial-gradient(ellipse 40% 40% at 20% 20%, hsl(280 60% 50% / 0.04) 0%, transparent 50%)" }} />
-
-          {/* ★ STATIC STAR FIELD — fixed behind the hero card ★ */}
-          <div
-            className="absolute inset-0 flex items-center justify-center"
-          >
-            {[...Array(80)].map((_, i) => {
-              const angle = (i / 80) * 360;
-              const dist = 150 + Math.random() * 400;
-              const size = Math.random() * 2.5 + 0.5;
-              return (
-                <motion.div
-                  key={`star-${i}`}
-                  className="absolute rounded-full"
-                  style={{
-                    width: size, height: size,
-                    top: "50%", left: "50%",
-                    transform: `rotate(${angle}deg) translateY(-${dist}px)`,
-                    background: i % 5 === 0
-                      ? "hsl(40, 90%, 70%)"
-                      : i % 3 === 0
-                        ? "hsl(205, 80%, 70%)"
-                        : "hsl(0, 0%, 90%)",
-                    boxShadow: size > 1.5
-                      ? `0 0 ${size * 3}px ${size}px hsl(40, 90%, 70%, 0.4)`
-                      : "none",
-                  }}
-                  animate={{ opacity: [0.2, 1, 0.2], scale: [0.8, 1.3, 0.8] }}
-                  transition={{ duration: Math.random() * 4 + 2, repeat: Infinity, delay: Math.random() * 3 }}
-                />
-              );
-            })}
-          </div>
-
-          {/* Static twinkling stars (foreground layer) */}
-          {[...Array(40)].map((_, i) => (
-            <motion.div
-              key={`twinkle-${i}`}
-              className="absolute rounded-full bg-foreground"
-              style={{
-                width: Math.random() * 1.5 + 0.5,
-                height: Math.random() * 1.5 + 0.5,
-                top: `${Math.random() * 100}%`,
-                left: `${Math.random() * 100}%`,
-              }}
-              animate={{ opacity: [0, 0.9, 0], scale: [0.5, 1.5, 0.5] }}
-              transition={{ duration: Math.random() * 3 + 1.5, repeat: Infinity, delay: Math.random() * 4 }}
-            />
-          ))}
-        </div>
-
-        {/* Neon speed streaks */}
-        <div className="absolute inset-0 pointer-events-none overflow-hidden">
-          <motion.div className="absolute bottom-20 h-[2px] w-64 rounded-full" style={{ background: "linear-gradient(90deg, transparent, hsl(32 95% 55% / 0.9), hsl(32 95% 55% / 0.3), transparent)" }} animate={{ x: ["-300px", "120vw"] }} transition={{ duration: 3, repeat: Infinity, ease: "linear", repeatDelay: 2 }} />
-          <motion.div className="absolute bottom-32 h-[1px] w-48 bg-gradient-to-r from-transparent via-info/50 to-transparent" animate={{ x: ["120vw", "-300px"] }} transition={{ duration: 4, repeat: Infinity, ease: "linear", repeatDelay: 3 }} />
-          <motion.div className="absolute top-40 h-[1px] w-32 bg-gradient-to-r from-transparent via-primary/40 to-transparent" animate={{ x: ["-200px", "120vw"] }} transition={{ duration: 5, repeat: Infinity, ease: "linear", repeatDelay: 1 }} />
-          {/* Extra comet streaks */}
-          <motion.div className="absolute top-1/3 h-[1.5px] w-40" style={{ background: "linear-gradient(90deg, transparent, hsl(280 60% 60% / 0.6), transparent)" }} animate={{ x: ["-200px", "120vw"] }} transition={{ duration: 6, repeat: Infinity, ease: "linear", repeatDelay: 4 }} />
-          <motion.div className="absolute bottom-1/4 h-[1px] w-56" style={{ background: "linear-gradient(90deg, transparent, hsl(40 90% 60% / 0.7), hsl(32 95% 50% / 0.3), transparent)" }} animate={{ x: ["120vw", "-300px"] }} transition={{ duration: 4.5, repeat: Infinity, ease: "linear", repeatDelay: 2.5 }} />
-        </div>
-
-        {/* Promo Flash Banners moved below videos */}
-
-        {/* Hero Content */}
-        <div className="container mx-auto px-4 relative z-10 pt-20 pb-8">
-          {/* ═══ APK Download CTA ═══ */}
-          <ApkDownloadHero />
-
-          {/* ═══ Free Period Banner ═══ */}
-          <FreePeriodHeroBanner />
-
-          {/* ═══ Launch Promo (free first ride + referral) ═══ */}
-          <LaunchPromoBanner />
-
-          {/* ═══ Videos at the top ═══ */}
-          <VideoShowcaseSection />
-
-          {/* ═══ One-Click Google Signup CTA ═══ */}
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.4, duration: 0.6 }}
-            className="max-w-2xl mx-auto mt-6 mb-2"
-          >
-            <div className="rounded-2xl border border-primary/30 bg-gradient-to-br from-primary/10 via-background/60 to-info/10 backdrop-blur-md p-5 md:p-6 glow-primary">
-              <div className="text-center mb-4">
-                <p className="text-base md:text-lg font-bold text-foreground">
-                  {dir === "rtl" ? "🎁 سجّل بضغطة واحدة واحصل على 50 درهم مجاناً" : "🎁 Sign up in one click & get 50 MAD free"}
-                </p>
-                <p className="text-xs text-muted-foreground mt-1">
-                  {dir === "rtl" ? "بدون كلمة مرور — رحلتك الأولى علينا" : "No password needed — your first ride is on us"}
-                </p>
-              </div>
-              <Button
-                type="button"
-                onClick={async () => {
-                  try {
-                    trackEvent("signup_google_oneclick_landing", { source: "hero" });
-                    const result = await lovable.auth.signInWithOAuth("google", {
-                      redirect_uri: window.location.origin,
-                    });
-                    if (result.error) {
-                      toast({ title: dir === "rtl" ? "خطأ في تسجيل الدخول عبر Google" : "Google sign-in error", variant: "destructive" });
-                    }
-                  } catch {
-                    toast({ title: dir === "rtl" ? "خطأ غير متوقع" : "Unexpected error", variant: "destructive" });
-                  }
-                }}
-                className="w-full h-12 md:h-14 rounded-xl bg-white text-slate-900 hover:bg-white/90 font-bold text-base md:text-lg flex items-center justify-center gap-3 shadow-xl"
-              >
-                <svg className="w-6 h-6" viewBox="0 0 24 24" aria-hidden="true">
-                  <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92a5.06 5.06 0 0 1-2.2 3.32v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.1z" fill="#4285F4"/>
-                  <path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/>
-                  <path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" fill="#FBBC05"/>
-                  <path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/>
-                </svg>
-                {dir === "rtl" ? "متابعة عبر Google" : "Continue with Google"}
-              </Button>
-              <button
-                type="button"
-                onClick={() => navigate("/auth/client")}
-                className="w-full text-center mt-3 text-xs text-muted-foreground hover:text-primary transition-colors"
-              >
-                {dir === "rtl" ? "أو سجّل عبر البريد الإلكتروني ←" : "Or sign up with email →"}
-              </button>
-            </div>
-          </motion.div>
-
-          {/* ═══ Role Cards — Glowing glass with inner blue light ═══ */}
-          <div className="grid grid-cols-2 md:grid-cols-5 gap-3 mt-4 max-w-5xl mx-auto">
-            {[
-              { img: iconCoupleWelcome, label: dir === "rtl" ? "مرحبا يا سيدي" : "Welcome!", desc: dir === "rtl" ? "خاصك توصيلة ولا تقضية؟" : "Need a ride or delivery?", action: () => navigate("/login"), big: true },
-              { img: iconVtcCar, label: dir === "rtl" ? "اعتبرها طوموبيلتك" : "Your personal ride", desc: dir === "rtl" ? "خدم معانا وربح فلوسك" : "Work with us & earn money", action: () => navigate("/auth/driver") },
-              { img: iconDeliveryBike, label: "Livraisons Express", desc: dir === "rtl" ? "توصيل سريع وموثوق" : "Fast & reliable delivery", action: () => navigate("/delivery") },
-              { img: iconRestaurant, label: dir === "rtl" ? "مطعم" : "Restaurant", desc: dir === "rtl" ? "أجي يا صاحبي افتح المحل ديالك هنا، بغينا نتغداو عندك" : "Open your restaurant here!", action: () => setStoreDialogOpen(true) },
-              { img: iconStoreMarketplace, label: dir === "rtl" ? "متجر" : "Store", desc: dir === "rtl" ? "أجي يا صاحبي افتح المحل ديالك هنا" : "Open your shop here!", action: () => setStoreDialogOpen(true) },
-            ].map((cat, i) => (
-              <motion.div
-                key={cat.label}
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 1.3 + i * 0.12, duration: 0.5 }}
-                onClick={cat.action}
-                whileHover={{ scale: 1.05, y: -6 }}
-                whileTap={{ scale: 0.97 }}
-                className="group relative rounded-2xl cursor-pointer overflow-hidden signage-3d-box"
-              >
-                <div className="relative z-10 p-3 flex flex-col items-center gap-1.5 text-center">
-                  <img src={cat.img} alt={cat.label} className="w-16 h-16 object-contain drop-shadow-[0_0_14px_hsl(205,80%,55%,0.4)] group-hover:scale-110 transition-transform duration-500" width={512} height={512} loading="lazy" />
-                  <h3 className={`font-bold text-foreground group-hover:text-[hsl(var(--info))] transition-colors tracking-wide ${(cat as any).big ? "text-base md:text-lg" : "text-sm md:text-base"}`}>{cat.label}</h3>
-                  <p className="text-sm leading-snug font-semibold" style={{ color: "hsl(40, 90%, 55%)" }}>{cat.desc}</p>
-                </div>
-              </motion.div>
-            ))}
-          </div>
-
-          {/* Store Dialog */}
-          <Dialog open={storeDialogOpen} onOpenChange={setStoreDialogOpen}>
-            <DialogContent className="max-w-md">
-              <DialogHeader>
-                <DialogTitle className="text-center text-xl">
-                  {dir === "rtl" ? "المتجر" : "Store"}
-                </DialogTitle>
-              </DialogHeader>
-              <div className="space-y-3 mt-4">
-                {/* Login to existing store */}
-                <button
-                  onClick={() => { setStoreDialogOpen(false); navigate("/login"); }}
-                  className="w-full flex items-center gap-4 p-4 rounded-xl border border-border hover:border-primary/50 hover:bg-accent/50 transition-all group"
-                >
-                  <div className="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center group-hover:bg-primary/20 transition-colors">
-                    <LogIn className="w-6 h-6 text-primary" />
-                  </div>
-                  <div className="text-start">
-                    <p className="font-bold text-foreground">{dir === "rtl" ? "دخول إلى محلي" : "Login to my store"}</p>
-                    <p className="text-xs text-muted-foreground">{dir === "rtl" ? "لديك حساب مسجل بالفعل" : "Already have an account"}</p>
-                  </div>
+          <div className="hn-top-actions">
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <button className="hn-chip hidden sm:inline-flex" type="button">
+                  <Globe className="h-4 w-4" />
+                  {currentLocale?.label}
+                  <ChevronDown className="h-3.5 w-3.5" />
                 </button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end" className="z-[100]">
+                {locales.map((item) => (
+                  <DropdownMenuItem
+                    key={item.code}
+                    onClick={() => setLocale(item.code)}
+                    className={locale === item.code ? "bg-accent/20 font-semibold" : ""}
+                  >
+                    <span className="mr-2">{item.flag}</span>
+                    {item.label}
+                  </DropdownMenuItem>
+                ))}
+              </DropdownMenuContent>
+            </DropdownMenu>
+            <Link to="/login" className="hn-chip hidden md:inline-flex">
+              <LogIn className="h-4 w-4" />
+              {c.actions.login}
+            </Link>
+            <Link to="/auth/client" className="hn-create-account">
+              <UserPlus className="h-4 w-4" />
+              {c.actions.signup}
+            </Link>
+          </div>
+        </header>
 
-                {/* Add new store */}
-                <button
-                  onClick={() => { setStoreDialogOpen(false); navigate("/auth/store_owner"); }}
-                  className="w-full flex items-center gap-4 p-4 rounded-xl border border-border hover:border-info/50 hover:bg-accent/50 transition-all group"
-                >
-                  <div className="w-12 h-12 rounded-xl bg-info/10 flex items-center justify-center group-hover:bg-info/20 transition-colors">
-                    <PlusCircle className="w-6 h-6 text-info" />
-                  </div>
-                  <div className="text-start">
-                    <p className="font-bold text-foreground">{dir === "rtl" ? "إضافة محلي" : "Add my store"}</p>
-                    <p className="text-xs text-muted-foreground">{dir === "rtl" ? "سجّل محلك واختر نوعه" : "Register and choose your store type"}</p>
-                  </div>
-                </button>
+        <div className="hn-trust-badge hn-trust-right">
+          <ShieldCheck className="hn-trust-icon hn-trust-icon-gold" />
+          <div>
+            <strong>{c.trust.safeTitle}</strong>
+            <span>{c.trust.safeSub}</span>
+          </div>
+        </div>
+        <div className="hn-trust-badge hn-trust-left">
+          <Headphones className="hn-trust-icon hn-trust-icon-blue" />
+          <div>
+            <strong>24/7</strong>
+            <span>{c.trust.supportSub}</span>
+          </div>
+        </div>
 
-                {/* Store types preview */}
-                <div className="pt-3 border-t border-border">
-                  <p className="text-xs text-muted-foreground mb-3 text-center">{dir === "rtl" ? "أنواع المحلات المدعومة" : "Supported store types"}</p>
-                  <div className="grid grid-cols-4 gap-2">
-                    {[
-                      { icon: Store, label: dir === "rtl" ? "متجر" : "Shop" },
-                      { icon: Coffee, label: dir === "rtl" ? "مقهى" : "Café" },
-                      { icon: UtensilsCrossed, label: dir === "rtl" ? "مطعم" : "Restaurant" },
-                      { icon: Pill, label: dir === "rtl" ? "صيدلية" : "Pharmacy" },
-                      { icon: Croissant, label: dir === "rtl" ? "مخبزة" : "Bakery" },
-                      { icon: Printer, label: dir === "rtl" ? "مطبعة" : "Print" },
-                      { icon: Shirt, label: dir === "rtl" ? "ملابس" : "Clothing" },
-                      { icon: Wrench, label: dir === "rtl" ? "خدمات" : "Services" },
-                    ].map((t) => (
-                      <div key={t.label} className="flex flex-col items-center gap-1 p-2 rounded-lg bg-muted/30">
-                        <t.icon className="w-4 h-4 text-muted-foreground" />
-                        <span className="text-[10px] text-muted-foreground">{t.label}</span>
-                      </div>
-                    ))}
-                  </div>
+        <main className="hn-hero-content" aria-labelledby="home-title">
+          <div className="hn-title-block">
+            <h1 id="home-title">
+              {c.hero.title1}
+              <span>{c.hero.title2}</span>
+            </h1>
+            <p>{c.hero.subtitle}</p>
+          </div>
+
+          <div className="hn-register-grid">
+            {cards.map(({ to, title, text, image, variant, apk }) => (
+              <div key={to} className="flex flex-col">
+                <Link to={to} className={`hn-register-card hn-card-${variant}`}>
+                  <img src={image} alt={title} className="hn-card-image" loading="lazy" width={512} height={512} />
+                  <h2>{title}</h2>
+                  <p>{text}</p>
+                  <span>
+                    <ChevronLeft className="h-3 w-3" />
+                    {c.registerNow}
+                  </span>
+                </Link>
+                <a href={apk} download className="hn-apk-btn" aria-label={`${c.downloadApk} — ${title}`}>
+                  ⬇ {c.downloadApk}
+                </a>
+              </div>
+            ))}
+          </div>
+
+          <div className="hn-admin-apks" role="group" aria-label={c.adminApksLabel}>
+            <strong>{c.adminApksLabel}</strong>
+            {adminApks.map(({ href, label }) => (
+              <a key={href} href={href} download>⬇ {label}</a>
+            ))}
+          </div>
+        </main>
+
+        <section className="hn-stats-dock" aria-label="HN Driver">
+          <div className="hn-stats-list">
+            {stats.map(({ Icon, value, label, variant }) => (
+              <div key={label} className={`hn-stat hn-stat-${variant}`}>
+                <Icon className="hn-stat-icon" strokeWidth={1.55} />
+                <div>
+                  <strong>{value}</strong>
+                  <span>{label}</span>
                 </div>
               </div>
-            </DialogContent>
-          </Dialog>
-
-          {/* ═══ Stats — Glowing boxes ═══ */}
-          <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 1.6, duration: 0.5 }} className="mt-6 max-w-3xl mx-auto">
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-              {stats.map((stat, i) => (
-                <motion.div
-                  key={stat.label}
-                  whileHover={{ scale: 1.08, y: -4 }}
-                  whileTap={{ scale: 0.97 }}
-                  className="group rounded-xl p-4 text-center cursor-default overflow-hidden relative signage-3d-box"
-                >
-                  {/* Inner bulb glow — bright pulsing center */}
-                  <motion.div 
-                    className="absolute inset-0 pointer-events-none"
-                    animate={{ opacity: [0.7, 1, 0.7] }}
-                    transition={{ duration: 3, repeat: Infinity, ease: "easeInOut", delay: i * 0.5 }}
-                    style={{
-                      background: "radial-gradient(ellipse 90% 80% at 50% 70%, hsl(205 80% 55% / 0.18) 0%, hsl(205 80% 55% / 0.06) 40%, transparent 70%)",
-                    }}
-                  />
-                  {/* Traveling light on border */}
-                  <motion.div className="absolute inset-0 rounded-xl pointer-events-none overflow-hidden">
-                    <motion.div
-                      className="absolute w-12 h-12 rounded-full"
-                      style={{ background: "radial-gradient(circle, hsl(205 80% 60% / 0.3) 0%, transparent 70%)", filter: "blur(6px)" }}
-                      animate={{
-                        top: ["0%", "0%", "100%", "100%", "0%"],
-                        left: ["0%", "100%", "100%", "0%", "0%"],
-                      }}
-                      transition={{ duration: 5 + i, repeat: Infinity, ease: "linear" }}
-                    />
-                  </motion.div>
-                  {/* Glass top reflection */}
-                  <div className="absolute top-0 left-[15%] right-[15%] h-[1px] pointer-events-none" style={{
-                    background: "linear-gradient(90deg, transparent, hsl(0 0% 100% / 0.2), transparent)",
-                  }} />
-                  {/* Hover glow boost */}
-                  <div className="absolute inset-0 rounded-xl opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none" style={{
-                    boxShadow: "inset 0 0 45px hsl(205 80% 55% / 0.18), 0 0 40px hsl(205 80% 55% / 0.25)",
-                  }} />
-                  <stat.icon className="relative z-10 w-4 h-4 text-[hsl(205,80%,65%)] mx-auto mb-1.5 group-hover:scale-110 transition-transform" />
-                  <div className="relative z-10 text-xl font-bold bg-gradient-to-r from-[hsl(45,90%,65%)] to-[hsl(35,100%,48%)] bg-clip-text text-transparent font-display">{stat.value}</div>
-                  <div className="relative z-10 text-[10px] text-[hsl(210,15%,50%)] mt-0.5">{stat.label}</div>
-                </motion.div>
-              ))}
-            </div>
-          </motion.div>
-
-          {/* Scroll indicator */}
-          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 2 }} className="flex justify-center mt-8">
-            <motion.div animate={{ y: [0, 8, 0] }} transition={{ duration: 2, repeat: Infinity }} className="text-[hsl(210,15%,25%)]">
-              <ChevronDown className="w-6 h-6" />
-            </motion.div>
-          </motion.div>
-        </div>
-      </section>
-
-
-      {/* ─── Promo Images Section ─── */}
-      <HeroPromoFlash />
-
-      {/* ─── Partner Sites / Groupe-HN Projects Showcase ─── */}
-      <section className="py-20 md:py-28 relative overflow-hidden">
-        <div className="absolute inset-0 bg-gradient-to-b from-background via-secondary/10 to-background" />
-        <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-primary/20 to-transparent" />
-        <div className="absolute inset-x-0 bottom-0 h-px bg-gradient-to-r from-transparent via-info/20 to-transparent" />
-
-        <div className="container mx-auto px-4 relative z-10">
-          <motion.div initial="hidden" whileInView="visible" viewport={{ once: true }} variants={fadeUp} custom={0} className="text-center mb-14">
-            <span className="inline-block px-4 py-1.5 rounded-full text-xs font-semibold uppercase tracking-[0.2em] border border-primary/30 text-primary bg-primary/5 mb-4">
-              {dir === "rtl" ? "شركاؤنا" : "Partners"}
-            </span>
-            <h2 className="text-2xl md:text-3xl font-bold font-display">
-              <span className="text-gradient-primary">{dir === "rtl" ? "مواقعنا الشريكة" : "Our Partner Sites"}</span>
-            </h2>
-            <p className="text-muted-foreground mt-3 max-w-2xl mx-auto text-sm md:text-base">
-              {dir === "rtl"
-                ? "منظومة كاملة من المنصات الرقمية التي طوّرتها HN — تجارة، نقل، ذكاء اصطناعي، إعلام وخدمات."
-                : "A complete ecosystem of digital platforms built by HN — commerce, transport, AI, media & services."}
-            </p>
-            <div className="w-16 h-1 gradient-primary mx-auto rounded-full mt-4" />
-          </motion.div>
-
-          {(() => {
-            // Use DB sites if available, fallback to static HN_PROJECTS
-            const items = dbPartnerSites.length > 0
-              ? dbPartnerSites.map((s) => ({
-                  id: s.id,
-                  nameAr: s.name_ar,
-                  name: s.name_en || s.name_ar,
-                  description: dir === "rtl" ? s.description_ar : (s.description_en || s.description_ar),
-                  url: s.url,
-                  tags: s.tags || [],
-                  status: s.status,
-                  featured: s.is_featured,
-                  gradient: s.gradient,
-                  glow: "shadow-primary/30",
-                  iconName: s.icon_name,
-                  rating: s.rating,
-                  users: s.users_label,
-                  preview: s.custom_screenshot_url || screenshotUrl(s.url, 800, 500),
-                }))
-              : HN_PROJECTS.map((p) => ({
-                  id: p.id,
-                  nameAr: p.nameAr,
-                  name: p.name,
-                  description: p.description,
-                  url: p.url,
-                  tags: p.tags,
-                  status: p.status,
-                  featured: !!p.featured,
-                  gradient: p.gradient,
-                  glow: p.glow,
-                  iconName: "Globe",
-                  rating: p.rating,
-                  users: p.users,
-                  preview: screenshotUrl(p.url, 800, 500),
-                }));
-
-            return (
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 max-w-7xl mx-auto">
-                {items.map((project, i) => {
-                  const Icon = (LucideIcons as any)[project.iconName] || LucideIcons.Globe;
-                  const domain = project.url.replace(/^https?:\/\//, "").replace(/\/$/, "");
-                  return (
-                    <motion.a
-                      key={project.id}
-                      href={project.url}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      initial="hidden"
-                      whileInView="visible"
-                      viewport={{ once: true }}
-                      variants={fadeUp}
-                      custom={i}
-                      whileHover={{ y: -6 }}
-                      className="group relative rounded-2xl glass-card border border-border/50 hover:border-primary/50 transition-all duration-500 overflow-hidden flex flex-col"
-                    >
-                      {/* Live screenshot preview */}
-                      <div className="relative aspect-[16/10] overflow-hidden bg-secondary/40">
-                        <img
-                          src={project.preview}
-                          alt={project.name}
-                          loading="lazy"
-                          onError={(e) => { (e.currentTarget as HTMLImageElement).style.opacity = "0.2"; }}
-                          className="absolute inset-0 w-full h-full object-cover object-top group-hover:scale-105 transition-transform duration-700"
-                        />
-                        <div className="absolute inset-0 bg-gradient-to-t from-card via-card/20 to-transparent" />
-                        <div className={`absolute top-3 left-3 w-10 h-10 rounded-xl bg-gradient-to-br ${project.gradient} ${project.glow} shadow-lg flex items-center justify-center`}>
-                          <Icon className="w-5 h-5 text-white" />
-                        </div>
-                        {project.featured && (
-                          <span className="absolute top-3 right-3 text-[10px] font-bold px-2 py-0.5 rounded-full bg-primary/90 text-primary-foreground backdrop-blur-sm">
-                            ★ {dir === "rtl" ? "مميز" : "Featured"}
-                          </span>
-                        )}
-                      </div>
-
-                      {/* Body */}
-                      <div className="p-5 flex flex-col flex-1">
-                        <div className="flex items-start justify-between gap-2 mb-2">
-                          <div>
-                            <h3 className="text-base md:text-lg font-bold text-foreground group-hover:text-primary transition-colors">
-                              {dir === "rtl" ? project.nameAr : project.name}
-                            </h3>
-                            <span className="text-[11px] text-muted-foreground/70" dir="ltr">{domain}</span>
-                          </div>
-                          <ArrowRight className="w-4 h-4 text-muted-foreground group-hover:text-primary group-hover:translate-x-0.5 rtl:group-hover:-translate-x-0.5 transition-all flex-shrink-0 mt-1" />
-                        </div>
-                        <p className="text-xs md:text-sm text-muted-foreground mb-4 line-clamp-2 flex-1">
-                          {project.description}
-                        </p>
-                        <div className="flex flex-wrap gap-1.5 mb-3">
-                          {project.tags.map((tag) => (
-                            <span
-                              key={tag}
-                              className="text-[10px] font-medium px-2 py-0.5 rounded-full bg-secondary/80 border border-border/50 text-muted-foreground"
-                            >
-                              {tag}
-                            </span>
-                          ))}
-                        </div>
-                        <div className="flex items-center justify-between pt-3 border-t border-border/30">
-                          {project.status === "live" ? (
-                            <span className="inline-flex items-center gap-1 text-[11px] font-medium text-success">
-                              <span className="w-1.5 h-1.5 rounded-full bg-success animate-pulse" />
-                              {dir === "rtl" ? "منشور" : "Live"}
-                            </span>
-                          ) : (
-                            <span className="text-[11px] text-muted-foreground">{dir === "rtl" ? "قريباً" : "Coming"}</span>
-                          )}
-                          <span className="text-[11px] text-muted-foreground flex items-center gap-1">
-                            <Star className="w-3 h-3 fill-yellow-400 text-yellow-400" />
-                            {project.rating} · {project.users}
-                          </span>
-                        </div>
-                      </div>
-                    </motion.a>
-                  );
-                })}
-              </div>
-            );
-          })()}
-
-          {/* Trusted partner logos strip */}
-          <div className="mt-16 pt-10 border-t border-border/30">
-            <p className="text-center text-[11px] font-semibold uppercase tracking-[0.25em] text-muted-foreground/70 mb-8">
-              {dir === "rtl" ? "موثوق به من شركاء طموحين" : "Trusted by ambitious partners worldwide"}
-            </p>
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-6 md:gap-8 max-w-4xl mx-auto">
-              {partnerSites.map((site, i) => (
-                <motion.a key={site.name} href={site.url} target="_blank" rel="noopener noreferrer" initial="hidden" whileInView="visible" viewport={{ once: true }} variants={fadeUp} custom={i + 1} whileHover={{ y: -4, scale: 1.03 }} className="group relative flex flex-col items-center gap-3">
-                  <div className="relative w-full aspect-square rounded-2xl glass-card group-hover:border-primary/50 transition-all duration-500 flex items-center justify-center p-5 overflow-hidden">
-                    <img src={site.logo} alt={site.name} loading="lazy" width={512} height={512} className="relative z-10 w-4/5 h-4/5 object-contain filter brightness-95 group-hover:brightness-110 transition-all duration-500" />
-                  </div>
-                  <span className="text-xs md:text-sm font-bold text-foreground group-hover:text-primary transition-colors">{site.name}</span>
-                </motion.a>
-              ))}
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* ─── Advanced Features (6-Grid) ─── */}
-      <section id="features" className="py-20 md:py-28 relative">
-        <div className="absolute inset-0 particles-bg opacity-20" />
-        <div className="container mx-auto px-4 relative z-10">
-          <motion.div initial="hidden" whileInView="visible" viewport={{ once: true }} variants={fadeUp} custom={0} className="text-center mb-14">
-            <span className="inline-block px-4 py-1.5 rounded-full text-xs font-semibold uppercase tracking-[0.2em] border border-info/30 text-info bg-info/5 mb-4">
-              {dir === "rtl" ? "المميزات" : "Features"}
-            </span>
-            <h2 className="text-3xl md:text-4xl font-bold font-display mb-3">
-              <span className="text-gradient-primary">{dir === "rtl" ? "ميزات قوية لإدارة فعالة" : "Powerful Features for Effective Management"}</span>
-            </h2>
-            <p className="text-muted-foreground text-lg max-w-2xl mx-auto">
-              {dir === "rtl" ? "كل ما تحتاجه لإدارة أسطول السائقين بكفاءة واحترافية" : "Everything you need to manage your driver fleet efficiently and professionally"}
-            </p>
-          </motion.div>
-
-          <motion.div initial="hidden" whileInView="visible" viewport={{ once: true }} variants={stagger} className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6 max-w-6xl mx-auto">
-            {advancedFeatures.map((f, i) => (
-              <motion.div key={i} variants={fadeChild} className="group relative rounded-2xl p-8 glass-card hover:border-primary/30 transition-all duration-500 overflow-hidden">
-                <div className="absolute inset-0 rounded-2xl gradient-primary opacity-0 group-hover:opacity-[0.03] transition-opacity duration-500" />
-                <div className={`w-14 h-14 rounded-2xl bg-secondary/80 border border-border group-hover:border-primary/30 flex items-center justify-center mb-5 group-hover:scale-110 transition-all duration-300`}>
-                  <f.icon className={`w-7 h-7 ${f.color}`} />
-                </div>
-                <h3 className="text-xl font-bold mb-3 text-foreground group-hover:text-primary transition-colors">{f.title}</h3>
-                <p className="text-muted-foreground leading-relaxed text-sm">{f.desc}</p>
-              </motion.div>
-            ))}
-          </motion.div>
-        </div>
-      </section>
-
-      {/* ─── Services ─── */}
-      <section id="services" className="py-20 md:py-28 relative">
-        <div className="absolute inset-0 bg-gradient-to-b from-background via-secondary/10 to-background" />
-        <div className="container mx-auto px-4 relative z-10">
-          <motion.h2 initial="hidden" whileInView="visible" viewport={{ once: true }} variants={fadeUp} custom={0} className="text-3xl md:text-4xl font-bold text-center font-display mb-4">
-            <span className="text-gradient-primary">{lt.servicesTitle}</span>
-          </motion.h2>
-          <div className="w-20 h-1 gradient-primary mx-auto rounded-full mb-14" />
-
-          <div className="grid md:grid-cols-3 gap-8 max-w-5xl mx-auto">
-            {services.map((s, i) => (
-              <motion.div key={s.title} initial="hidden" whileInView="visible" viewport={{ once: true }} variants={fadeUp} custom={i + 1} className={`group relative rounded-2xl p-8 glass-card hover:border-primary/40 transition-all duration-500 ${s.glow}`}>
-                <div className="absolute inset-0 rounded-2xl gradient-primary opacity-0 group-hover:opacity-[0.03] transition-opacity duration-500" />
-                <div className="icon-circle-orange mb-5">
-                  <s.icon className="w-7 h-7 text-primary" />
-                </div>
-                <h3 className="text-xl font-bold mb-3 text-foreground">{s.title}</h3>
-                <p className="text-muted-foreground leading-relaxed">{s.desc}</p>
-              </motion.div>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* ─── Why HN Driver ─── */}
-      <section className="py-20 md:py-28 relative">
-        <div className="absolute inset-0 bg-gradient-to-b from-background via-secondary/20 to-background" />
-        <div className="container mx-auto px-4 relative z-10">
-          <motion.h2 initial="hidden" whileInView="visible" viewport={{ once: true }} variants={fadeUp} custom={0} className="text-3xl md:text-4xl font-bold text-center font-display mb-4">
-            <span className="text-gradient-primary">{lt.whyTitle}</span>
-          </motion.h2>
-          <div className="w-20 h-1 gradient-primary mx-auto rounded-full mb-14" />
-
-          <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-6 max-w-5xl mx-auto">
-            {whyFeatures.map((f, i) => (
-              <motion.div key={f.title} initial="hidden" whileInView="visible" viewport={{ once: true }} variants={fadeUp} custom={i + 1} className="text-center p-6 rounded-2xl glass-card hover:border-primary/30 transition-all duration-500 group">
-                <div className="w-14 h-14 rounded-full bg-primary/10 flex items-center justify-center mx-auto mb-4 group-hover:bg-primary/20 group-hover:scale-110 transition-all">
-                  <f.icon className="w-7 h-7 text-primary" />
-                </div>
-                <h3 className="font-bold mb-2 text-foreground">{f.title}</h3>
-                <p className="text-sm text-muted-foreground leading-relaxed">{f.desc}</p>
-              </motion.div>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* ─── Browse Services ─── */}
-      <section className="py-20 md:py-28 relative">
-        <div className="absolute inset-0 particles-bg opacity-20" />
-        <div className="container mx-auto px-4 relative z-10">
-          <motion.h2 initial="hidden" whileInView="visible" viewport={{ once: true }} variants={fadeUp} custom={0} className="text-3xl md:text-4xl font-bold text-center font-display mb-4">
-            <span className="text-gradient-primary">{lt.browseServicesTitle}</span>
-          </motion.h2>
-          <div className="w-20 h-1 gradient-primary mx-auto rounded-full mb-14" />
-
-          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-5 max-w-5xl mx-auto">
-            {serviceCategories.map((cat, i) => (
-              <motion.div key={cat.key} initial="hidden" whileInView="visible" viewport={{ once: true }} variants={fadeUp} custom={i + 1} onClick={() => navigate(`/delivery/${cat.key}`)} className="group cursor-pointer rounded-2xl p-6 glass-card hover:border-primary/40 transition-all duration-500 text-center">
-                <div className="w-14 h-14 rounded-2xl bg-primary/10 flex items-center justify-center mx-auto mb-4 group-hover:bg-primary/20 group-hover:scale-110 transition-all duration-300">
-                  <cat.icon className="w-7 h-7 text-primary" />
-                </div>
-                <h3 className="font-bold text-foreground text-sm md:text-base">{cat.label}</h3>
-              </motion.div>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* ─── Social Proof + Coverage Map ─── */}
-      <TangierSocialProof />
-
-      {/* ─── Download App Section ─── */}
-      <section id="download" className="py-20 md:py-28 relative">
-        <div className="container mx-auto px-4 text-center relative z-10">
-          <motion.div initial="hidden" whileInView="visible" viewport={{ once: true }} variants={fadeUp} custom={0} className="max-w-2xl mx-auto">
-            <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full glass-card border border-primary/20 text-xs text-primary mb-6">
-              <Smartphone className="w-4 h-4" />
-              {dir === "rtl" ? "متاح الآن على Google Play" : "Now available on Google Play"}
-            </div>
-            <h2 className="text-3xl md:text-5xl font-bold font-display mb-6">
-              <span className="text-gradient-primary">{dir === "rtl" ? "حمّل التطبيق الآن" : "Download the App"}</span>
-            </h2>
-            <p className="text-lg text-muted-foreground mb-10 leading-relaxed">
-              {dir === "rtl"
-                ? "احصل على تجربة أفضل مع تطبيق HN Driver على هاتفك — اطلب رحلة، تتبع طلبك، أو ابدأ العمل كسائق."
-                : "Get the best experience with HN Driver on your phone — book a ride, track your order, or start driving."}
-            </p>
-            <a
-              href="https://play.google.com/store/apps/details?id=com.hndriver.app&pcampaignid=web_share"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="inline-flex items-center gap-3 px-8 py-4 rounded-2xl bg-foreground text-background font-bold text-lg hover:scale-105 transition-transform duration-300 shadow-xl"
-            >
-              <svg viewBox="0 0 24 24" className="w-7 h-7 fill-current" xmlns="http://www.w3.org/2000/svg">
-                <path d="M3.609 1.814L13.792 12 3.61 22.186a.996.996 0 0 1-.61-.92V2.734a1 1 0 0 1 .609-.92zm10.89 10.893l2.302 2.302-10.937 6.333 8.635-8.635zm3.199-3.199l2.302 2.302a1 1 0 0 1 0 1.38l-2.302 2.302L15.396 13l2.302-2.492zM5.864 3.458L16.8 9.79l-2.302 2.302L5.864 3.458z" />
-              </svg>
-              Google Play
-            </a>
-          </motion.div>
-        </div>
-      </section>
-
-      {/* ─── CTA ─── */}
-      <section className="py-20 md:py-28 relative overflow-hidden" id="contact">
-        <div className="absolute top-1/2 left-0 right-0 h-px bg-gradient-to-r from-transparent via-primary/20 to-transparent" />
-        <div className="container mx-auto px-4 text-center relative z-10">
-          <motion.div initial="hidden" whileInView="visible" viewport={{ once: true }} variants={fadeUp} custom={0} className="max-w-2xl mx-auto">
-            <h2 className="text-3xl md:text-5xl font-bold font-display mb-6">
-              <span className="text-gradient-primary glow-text">{lt.ctaTitle}</span>
-            </h2>
-            <p className="text-lg text-muted-foreground mb-10">{lt.ctaSubtitle}</p>
-            <div className="flex flex-col sm:flex-row gap-4 justify-center">
-              <Button size="lg" onClick={() => navigate("/delivery")} className="gradient-primary text-primary-foreground font-bold text-lg rounded-full px-12 py-6 glow-primary animate-pulse-glow">
-                {dir === "rtl" ? "تصفّح الخدمات" : "Browse Services"}
-                <ArrowRight className={`w-5 h-5 ${dir === "rtl" ? "me-2 rotate-180" : "ms-2"}`} />
-              </Button>
-              <Button size="lg" variant="outline" onClick={() => navigate("/auth/client")} className="rounded-full px-12 py-6 border-border hover:border-primary/40 hover:bg-primary/5">
-                <UserPlus className={`w-5 h-5 ${dir === "rtl" ? "ml-2" : "mr-2"}`} />
-                {dir === "rtl" ? "إنشاء حساب مجاني" : "Create Free Account"}
-              </Button>
-            </div>
-          </motion.div>
-        </div>
-      </section>
-
-      {/* ─── How It Works ─── */}
-      <section className="py-20 md:py-28 relative overflow-hidden">
-        <div className="absolute inset-0 bg-gradient-to-b from-background via-secondary/10 to-background" />
-        <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-primary/20 to-transparent" />
-        <div className="container mx-auto px-4 relative z-10">
-          <motion.div initial="hidden" whileInView="visible" viewport={{ once: true }} variants={fadeUp} custom={0} className="text-center mb-14">
-            <span className="inline-block px-4 py-1.5 rounded-full text-xs font-semibold uppercase tracking-[0.2em] border border-success/30 text-success bg-success/5 mb-4">
-              {dir === "rtl" ? "بسيط وسريع" : "Simple & Fast"}
-            </span>
-            <h2 className="text-3xl md:text-4xl font-bold font-display mb-3">
-              <span className="text-gradient-primary">{dir === "rtl" ? "كيف تبدأ مع HN Driver؟" : "How to Start with HN Driver?"}</span>
-            </h2>
-            <p className="text-muted-foreground text-lg max-w-2xl mx-auto">
-              {dir === "rtl" ? "4 خطوات بسيطة تفصلك عن بدء رحلتك" : "4 simple steps to begin your journey"}
-            </p>
-          </motion.div>
-
-          <div className="relative max-w-4xl mx-auto">
-            {/* Connection line */}
-            <div className="hidden md:block absolute top-24 left-[10%] right-[10%] h-0.5 bg-gradient-to-r from-primary/30 via-success/30 to-info/30 rounded-full" />
-
-            <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-8">
-              {[
-                { number: "01", icon: UserPlus, title: dir === "rtl" ? "سجل مجاناً" : "Register Free", desc: dir === "rtl" ? "أنشئ حسابك في أقل من 3 دقائق" : "Create your account in under 3 minutes", details: dir === "rtl" ? ["معلومات شخصية بسيطة", "رخصة قيادة سارية", "بطاقة هوية وطنية"] : ["Basic personal info", "Valid driving license", "National ID card"], color: "text-primary" },
-                { number: "02", icon: FileCheck, title: dir === "rtl" ? "تحقق من الوثائق" : "Document Verification", desc: dir === "rtl" ? "نراجع مستنداتك خلال 24 ساعة" : "We review your documents within 24 hours", details: dir === "rtl" ? ["مراجعة سريعة", "تحقق آمن", "موافقة فورية"] : ["Quick review", "Secure verification", "Instant approval"], color: "text-success" },
-                { number: "03", icon: Car, title: dir === "rtl" ? "ابدأ القيادة" : "Start Driving", desc: dir === "rtl" ? "استلم طلبك الأول وابدأ الكسب" : "Receive your first order and start earning", details: dir === "rtl" ? ["طلبات فورية", "ملاحة ذكية", "دعم مباشر"] : ["Instant orders", "Smart navigation", "Live support"], color: "text-info" },
-                { number: "04", icon: DollarSign, title: dir === "rtl" ? "احصل على أرباحك" : "Get Paid", desc: dir === "rtl" ? "دفع فوري بعد كل طلب" : "Instant payment after every order", details: dir === "rtl" ? ["تحويل لحظي", "بدون رسوم", "سحب متى تشاء"] : ["Instant transfer", "No fees", "Withdraw anytime"], color: "text-[hsl(var(--warning))]" },
-              ].map((step, i) => (
-                <motion.div key={step.number} initial="hidden" whileInView="visible" viewport={{ once: true }} variants={fadeUp} custom={i + 1} className="group relative text-center">
-                  <div className="relative mx-auto mb-6">
-                    <div className={`w-20 h-20 rounded-2xl bg-secondary/80 border border-border group-hover:border-primary/30 flex items-center justify-center mx-auto group-hover:scale-110 transition-all duration-300`}>
-                      <step.icon className={`w-9 h-9 ${step.color}`} />
-                    </div>
-                    <div className="absolute -top-2 -right-2 w-8 h-8 rounded-full gradient-primary flex items-center justify-center text-primary-foreground text-xs font-bold shadow-lg">
-                      {step.number}
-                    </div>
-                  </div>
-                  <h3 className="text-lg font-bold mb-2 text-foreground group-hover:text-primary transition-colors">{step.title}</h3>
-                  <p className="text-sm text-muted-foreground mb-4">{step.desc}</p>
-                  <ul className="space-y-2">
-                    {step.details.map((detail, idx) => (
-                      <li key={idx} className="flex items-center justify-center gap-2 text-xs text-muted-foreground">
-                        <CheckCircle className="w-3.5 h-3.5 text-success flex-shrink-0" />
-                        <span>{detail}</span>
-                      </li>
-                    ))}
-                  </ul>
-                </motion.div>
-              ))}
-            </div>
-          </div>
-
-          {/* CTA Box */}
-          <motion.div initial="hidden" whileInView="visible" viewport={{ once: true }} variants={fadeUp} custom={5} className="mt-16 max-w-2xl mx-auto text-center">
-            <div className="glass rounded-2xl p-8 border border-border">
-              <p className="text-lg font-bold text-foreground mb-4">
-                {dir === "rtl" ? "جاهز للبدء؟ انضم الآن وابدأ الكسب!" : "Ready to start? Join now and start earning!"}
-              </p>
-              <button onClick={() => navigate("/auth/driver")} className="gradient-primary text-primary-foreground font-bold rounded-full px-8 py-3 glow-primary hover:opacity-90 transition-opacity">
-                {dir === "rtl" ? "إنشاء حساب مجاني →" : "Create Free Account →"}
-              </button>
-              <p className="text-xs text-muted-foreground mt-3">
-                {dir === "rtl" ? "✓ بدون رسوم تسجيل  ✓ بدون التزامات  ✓ إلغاء في أي وقت" : "✓ No registration fees  ✓ No commitments  ✓ Cancel anytime"}
-              </p>
-            </div>
-          </motion.div>
-        </div>
-      </section>
-
-      {/* ─── Testimonials ─── */}
-      <section className="py-20 md:py-28 relative">
-        <div className="absolute inset-0 particles-bg opacity-20" />
-        <div className="container mx-auto px-4 relative z-10">
-          <motion.div initial="hidden" whileInView="visible" viewport={{ once: true }} variants={fadeUp} custom={0} className="text-center mb-14">
-            <span className="inline-block px-4 py-1.5 rounded-full text-xs font-semibold uppercase tracking-[0.2em] border border-primary/30 text-primary bg-primary/5 mb-4">
-              {dir === "rtl" ? "قصص نجاح" : "Success Stories"}
-            </span>
-            <h2 className="text-3xl md:text-4xl font-bold font-display mb-3">
-              <span className="text-gradient-primary">{dir === "rtl" ? "ماذا يقول سائقونا؟" : "What Our Drivers Say"}</span>
-            </h2>
-            <p className="text-muted-foreground text-lg max-w-2xl mx-auto">
-              {dir === "rtl" ? "آلاف السائقين حققوا أهدافهم المالية معنا" : "Thousands of drivers achieved their financial goals with us"}
-            </p>
-          </motion.div>
-
-          <div className="grid md:grid-cols-3 gap-8 max-w-5xl mx-auto">
-            {[
-              { name: dir === "rtl" ? "أحمد محمد" : "Ahmed Mohamed", role: dir === "rtl" ? "سائق منذ 6 أشهر" : "Driver for 6 months", text: dir === "rtl" ? "أفضل قرار اتخذته! أرباحي تضاعفت 3 مرات مقارنة بعملي السابق. التطبيق سهل والدعم ممتاز." : "Best decision I made! My earnings tripled compared to my previous job. Easy app and excellent support.", earnings: dir === "rtl" ? "12,000 د.م/شهر" : "12,000 MAD/month", trips: "450+" },
-              { name: dir === "rtl" ? "خالد العتيبي" : "Khalid Otaibi", role: dir === "rtl" ? "سائق منذ سنة" : "Driver for 1 year", text: dir === "rtl" ? "المرونة في العمل رائعة. أعمل في أوقات فراغي وأحقق دخل إضافي ممتاز. أنصح الجميع بالتجربة." : "The work flexibility is amazing. I work in my free time and earn great extra income. Highly recommended.", earnings: dir === "rtl" ? "8,500 د.م/شهر" : "8,500 MAD/month", trips: "1200+" },
-              { name: dir === "rtl" ? "سعد الدوسري" : "Saad Dosari", role: dir === "rtl" ? "سائق منذ 3 أشهر" : "Driver for 3 months", text: dir === "rtl" ? "الدفع الفوري ميزة رائعة. لا أنتظر نهاية الشهر للحصول على أرباحي. التطبيق احترافي جداً." : "Instant payment is a great feature. No waiting until month-end. Very professional app.", earnings: dir === "rtl" ? "9,800 د.م/شهر" : "9,800 MAD/month", trips: "280+" },
-            ].map((t, i) => (
-              <motion.div key={i} initial="hidden" whileInView="visible" viewport={{ once: true }} variants={fadeUp} custom={i + 1} className="group relative rounded-2xl p-8 glass-card hover:border-primary/30 transition-all duration-500 overflow-hidden">
-                <div className="absolute inset-0 rounded-2xl gradient-primary opacity-0 group-hover:opacity-[0.03] transition-opacity duration-500" />
-                <Quote className="w-8 h-8 text-primary/30 mb-4" />
-                <div className="flex gap-1 mb-4">
-                  {[...Array(5)].map((_, j) => <Star key={j} className="w-4 h-4 fill-primary text-primary" />)}
-                </div>
-                <p className="text-muted-foreground text-sm leading-relaxed mb-6 italic">"{t.text}"</p>
-                <div className="grid grid-cols-2 gap-3 mb-6 p-3 rounded-xl bg-secondary/50 border border-border/50">
-                  <div className="text-center">
-                    <div className="text-sm font-bold text-primary">{t.earnings}</div>
-                    <div className="text-[10px] text-muted-foreground">{dir === "rtl" ? "الأرباح الشهرية" : "Monthly Earnings"}</div>
-                  </div>
-                  <div className="text-center">
-                    <div className="text-sm font-bold text-success">{t.trips}</div>
-                    <div className="text-[10px] text-muted-foreground">{dir === "rtl" ? "إجمالي الرحلات" : "Total Trips"}</div>
-                  </div>
-                </div>
-                <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 rounded-full gradient-primary flex items-center justify-center text-primary-foreground font-bold text-sm">
-                    {t.name.charAt(0)}
-                  </div>
-                  <div>
-                    <h4 className="text-sm font-bold text-foreground">{t.name}</h4>
-                    <p className="text-xs text-muted-foreground">{t.role}</p>
-                  </div>
-                </div>
-              </motion.div>
             ))}
           </div>
 
-          {/* Stats strip */}
-          <motion.div initial="hidden" whileInView="visible" viewport={{ once: true }} variants={fadeUp} custom={4} className="mt-14 max-w-4xl mx-auto">
-            <div className="glass rounded-2xl p-6 grid grid-cols-2 md:grid-cols-4 gap-6">
-              {[
-                { val: "10,000+", label: dir === "rtl" ? "سائق نشط" : "Active Drivers" },
-                { val: "4.9/5", label: dir === "rtl" ? "تقييم السائقين" : "Driver Rating" },
-                { val: "50K+", label: dir === "rtl" ? "طلب يومياً" : "Daily Orders" },
-                { val: "98%", label: dir === "rtl" ? "رضا العملاء" : "Customer Satisfaction" },
-              ].map((s) => (
-                <div key={s.label} className="text-center">
-                  <div className="text-2xl font-bold text-gradient-primary font-display">{s.val}</div>
-                  <div className="text-xs text-muted-foreground mt-1">{s.label}</div>
-                </div>
-              ))}
+          <a href="/downloads/apps/hn-general.apk" className="hn-download-block" download>
+            <Smartphone className="hn-phone-icon" />
+            <div>
+              <strong>{c.download.title}</strong>
+              <span>{c.download.sub}</span>
             </div>
-          </motion.div>
-        </div>
+            <img src={phoneMockup} alt="HN Driver" loading="eager" />
+          </a>
+        </section>
+
       </section>
-
-      {/* ─── FAQ ─── */}
-      <section className="py-20 md:py-28 relative">
-        <div className="absolute inset-0 bg-gradient-to-b from-background via-secondary/10 to-background" />
-        <div className="container mx-auto px-4 relative z-10">
-          <motion.div initial="hidden" whileInView="visible" viewport={{ once: true }} variants={fadeUp} custom={0} className="text-center mb-14">
-            <span className="inline-block px-4 py-1.5 rounded-full text-xs font-semibold uppercase tracking-[0.2em] border border-info/30 text-info bg-info/5 mb-4">
-              <HelpCircle className="w-3.5 h-3.5 inline-block mr-1 -mt-0.5" />
-              {dir === "rtl" ? "أسئلة شائعة" : "FAQ"}
-            </span>
-            <h2 className="text-3xl md:text-4xl font-bold font-display mb-3">
-              <span className="text-gradient-primary">{dir === "rtl" ? "الأسئلة الأكثر شيوعاً" : "Frequently Asked Questions"}</span>
-            </h2>
-          </motion.div>
-
-          <div className="max-w-3xl mx-auto space-y-4">
-            {[
-              { q: dir === "rtl" ? "كم يمكنني أن أكسب مع HN Driver؟" : "How much can I earn with HN Driver?", a: dir === "rtl" ? "الأرباح تعتمد على عدد الساعات والطلبات. متوسط الأرباح يتراوح بين 5,000 إلى 15,000 د.م شهرياً للسائقين النشطين. كلما زاد عدد الطلبات، زادت أرباحك." : "Earnings depend on hours and orders. Active drivers earn between 5,000-15,000 MAD monthly on average. More orders mean more earnings." },
-              { q: dir === "rtl" ? "ما هي المتطلبات للانضمام؟" : "What are the requirements to join?", a: dir === "rtl" ? "تحتاج إلى رخصة قيادة سارية، بطاقة هوية وطنية، هاتف ذكي، وسيارة بحالة جيدة. عملية التسجيل تستغرق أقل من 5 دقائق." : "You need a valid driving license, national ID, smartphone, and a car in good condition. Registration takes less than 5 minutes." },
-              { q: dir === "rtl" ? "كيف يتم الدفع؟" : "How does payment work?", a: dir === "rtl" ? "نوفر دفع فوري بعد كل طلب. يمكنك سحب أرباحك في أي وقت عبر التحويل البنكي أو المحفظة الإلكترونية بدون أي رسوم." : "We offer instant payment after every order. You can withdraw earnings anytime via bank transfer or e-wallet with zero fees." },
-              { q: dir === "rtl" ? "هل يوجد تأمين أثناء العمل؟" : "Is there insurance while working?", a: dir === "rtl" ? "نعم، نوفر تأمين شامل يغطي السائق والمركبة أثناء تنفيذ الطلبات. سلامتك هي أولويتنا." : "Yes, we provide comprehensive insurance covering the driver and vehicle during active orders. Your safety is our priority." },
-              { q: dir === "rtl" ? "هل يمكنني العمل بدوام جزئي؟" : "Can I work part-time?", a: dir === "rtl" ? "بالتأكيد! أنت حر في اختيار أوقات عملك. لا يوجد حد أدنى لساعات العمل. اعمل متى تشاء وتوقف متى تريد." : "Absolutely! You're free to choose your work hours. No minimum hours required. Work when you want, stop when you want." },
-              { q: dir === "rtl" ? "كيف أتواصل مع الدعم الفني؟" : "How do I contact support?", a: dir === "rtl" ? "دعمنا متاح 24/7 عبر التطبيق مباشرة، الاتصال الهاتفي، أو الدردشة المباشرة. فريقنا جاهز لمساعدتك في أي وقت." : "Our support is available 24/7 via the app, phone call, or live chat. Our team is ready to help anytime." },
-            ].map((faq, i) => (
-              <FAQItem key={i} question={faq.q} answer={faq.a} index={i} />
-            ))}
-          </div>
-
-          <motion.div initial="hidden" whileInView="visible" viewport={{ once: true }} variants={fadeUp} custom={7} className="text-center mt-12">
-            <p className="text-muted-foreground mb-4">
-              {dir === "rtl" ? "لم تجد إجابتك؟ تواصل معنا مباشرة" : "Didn't find your answer? Contact us directly"}
-            </p>
-            <button onClick={() => navigate("/welcome")} className="inline-flex items-center gap-2 gradient-primary text-primary-foreground font-bold rounded-full px-8 py-3 glow-primary hover:opacity-90 transition-opacity">
-              <MessageSquare className="w-4 h-4" />
-              {dir === "rtl" ? "تواصل مع الدعم" : "Contact Support"}
-            </button>
-          </motion.div>
-        </div>
-      </section>
-
-      {/* ─── Projects on Groupe-HN ─── */}
-      <section className="py-20 relative overflow-hidden">
-        <div className="absolute inset-0 bg-gradient-to-b from-background via-card/20 to-background" />
-        <div className="container mx-auto px-4 relative z-10">
-          <motion.div initial="hidden" whileInView="visible" viewport={{ once: true }} variants={fadeUp} custom={0} className="text-center mb-14">
-            <h2 className="text-3xl md:text-4xl font-bold font-display mb-3">
-              <span className="text-gradient-primary glow-text">مشاريعنا على Groupe-HN</span>
-            </h2>
-            <p className="text-muted-foreground text-lg">مجموعة من المشاريع المبتكرة التي طورتها شركة HN للبرمجيات</p>
-          </motion.div>
-
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-            {HN_PROJECTS.map((project, i) => {
-              const Icon = project.icon;
-              return (
-                <motion.a
-                  key={project.id}
-                  href={project.url}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  initial="hidden"
-                  whileInView="visible"
-                  viewport={{ once: true }}
-                  variants={fadeUp}
-                  custom={i}
-                  className="group relative rounded-2xl border border-border/50 bg-card/50 backdrop-blur-sm p-6 hover:border-primary/50 transition-all duration-300 hover:shadow-lg hover:shadow-primary/10 block"
-                >
-                  <div className={`w-16 h-16 rounded-xl mb-4 flex items-center justify-center bg-gradient-to-br ${project.gradient} ${project.glow} shadow-lg group-hover:scale-110 transition-transform`}>
-                    <Icon className="w-8 h-8 text-white" />
-                  </div>
-                  <div className="flex items-center justify-between mb-2">
-                    <h3 className="text-lg font-bold text-foreground">{project.nameAr}</h3>
-                    {project.featured && (
-                      <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-primary/20 text-primary">مميز</span>
-                    )}
-                  </div>
-                  <p className="text-xs text-muted-foreground/80 mb-1">{project.name}</p>
-                  <p className="text-sm text-muted-foreground mb-3 line-clamp-2">{project.description}</p>
-                  <div className="flex items-center justify-between">
-                    {project.status === "live" ? (
-                      <span className="inline-flex items-center gap-1 text-xs font-medium text-success">
-                        <span className="w-2 h-2 rounded-full bg-success animate-pulse" />
-                        منشور
-                      </span>
-                    ) : (
-                      <span className="inline-flex items-center gap-1 text-xs font-medium text-muted-foreground">
-                        <span className="w-2 h-2 rounded-full bg-muted-foreground" />
-                        قريباً
-                      </span>
-                    )}
-                    <span className="text-xs text-muted-foreground flex items-center gap-1">
-                      <Star className="w-3 h-3 fill-yellow-400 text-yellow-400" /> {project.rating}
-                    </span>
-                  </div>
-                </motion.a>
-              );
-            })}
-          </div>
-          <div className="text-center mt-10">
-            <button
-              onClick={() => navigate("/projects")}
-              className="inline-flex items-center gap-2 gradient-primary text-primary-foreground font-bold rounded-full px-8 py-3 glow-primary hover:opacity-90 transition-opacity"
-            >
-              عرض جميع المشاريع
-              <ArrowRight className="w-4 h-4" />
-            </button>
-          </div>
-        </div>
-      </section>
-
-      {/* ─── Ads Section ─── */}
-      <AdsSection />
-
-      {/* ─── Signup Conversion Components ─── */}
-      <SignupBanner />
-      <StickyCTABar />
     </div>
   );
-}
+};
+
+export default LandingPage;

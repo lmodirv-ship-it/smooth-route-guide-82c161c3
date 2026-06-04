@@ -1,26 +1,10 @@
-/**
- * Capacitor config for Delivery Driver App (separate APK)
- * App ID: com.hndriver.delivery
- * OTA: loads from production server — updates appear automatically
- */
 {
   "appId": "com.hndriver.delivery",
-  "appName": "HN Delivery - توصيل",
+  "appName": "HN Delivery",
   "webDir": "dist-driver-delivery",
-  "server": {
-    "url": "https://delivery.hn-driver.com",
-    "cleartext": true
-  },
+  "android": { "allowMixedContent": true, "backgroundColor": "#0A0A0A" },
   "plugins": {
-    "SplashScreen": {
-      "launchAutoHide": true,
-      "backgroundColor": "#0A0A0A",
-      "showSpinner": true,
-      "spinnerColor": "#10B981"
-    },
-    "StatusBar": {
-      "style": "DARK",
-      "backgroundColor": "#0A0A0A"
-    }
+    "SplashScreen": { "launchAutoHide": true, "backgroundColor": "#0A0A0A", "showSpinner": true, "spinnerColor": "#A855F7" },
+    "StatusBar": { "style": "DARK", "backgroundColor": "#0A0A0A" }
   }
 }

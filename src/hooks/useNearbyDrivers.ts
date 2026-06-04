@@ -7,17 +7,16 @@ export interface NearbyDriver {
   lng: number;
   name: string;
   rating: number | null;
+  onlineSince: string | null;
 }
 
 export function useNearbyDrivers() {
   const [drivers, setDrivers] = useState<NearbyDriver[]>([]);
 
   const fetchDrivers = async () => {
-    // Get active drivers with location
-    // Use the secure public view instead of the drivers table directly
     const { data, error } = await supabase
       .from('active_drivers_public')
-      .select('id, car_id, current_lat, current_lng, rating')
+      .select('id, car_id, current_lat, current_lng, rating, online_since')
       .not('current_lat', 'is', null)
       .not('current_lng', 'is', null) as any;
 
@@ -32,6 +31,7 @@ export function useNearbyDrivers() {
           lng: Number(d.current_lng),
           name: 'سائق',
           rating: d.rating,
+          onlineSince: d.online_since ?? null,
         }))
     );
   };

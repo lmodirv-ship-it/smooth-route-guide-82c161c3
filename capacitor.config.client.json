@@ -1,26 +1,10 @@
-/**
- * Capacitor config for Client App (separate APK)
- * App ID: com.hndriver.client
- * OTA: loads from production server — updates appear automatically
- */
 {
   "appId": "com.hndriver.client",
-  "appName": "HN Client - زبون",
+  "appName": "HN Client",
   "webDir": "dist-client",
-  "server": {
-    "url": "https://www.hn-driver.com",
-    "cleartext": true
-  },
+  "android": { "allowMixedContent": true, "backgroundColor": "#0A0A0A" },
   "plugins": {
-    "SplashScreen": {
-      "launchAutoHide": true,
-      "backgroundColor": "#0A0A0A",
-      "showSpinner": true,
-      "spinnerColor": "#3B82F6"
-    },
-    "StatusBar": {
-      "style": "DARK",
-      "backgroundColor": "#0A0A0A"
-    }
+    "SplashScreen": { "launchAutoHide": true, "backgroundColor": "#0A0A0A", "showSpinner": true, "spinnerColor": "#10B981" },
+    "StatusBar": { "style": "DARK", "backgroundColor": "#0A0A0A" }
   }
 }

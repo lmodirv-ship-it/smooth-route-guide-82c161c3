@@ -3,7 +3,7 @@ import { Download, Smartphone, Shield, Zap, Star } from "lucide-react";
 import { trackEvent } from "@/components/TrackingScripts";
 
 const APK_URL = "/downloads/hn-driver.apk";
-const APK_SIZE_MB = 81;
+const APK_SIZE_MB = 162;
 
 const ApkDownloadHero = () => {
   const handleDownload = () => {

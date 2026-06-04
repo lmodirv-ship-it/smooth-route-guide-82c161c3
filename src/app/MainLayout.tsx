@@ -71,7 +71,7 @@ const MainLayoutInner = () => {
           }}
         >
           {/* Logo */}
-          <img src={logo} alt="HN" className="w-8 h-8 rounded-full shadow-md shrink-0" />
+          <a href="/" aria-label="Home"><img src={logo} alt="HN" className="w-8 h-8 rounded-full shadow-md shrink-0 cursor-pointer" /></a>
           <div className="w-px h-5 bg-border/40 shrink-0" />
           
           {/* Visitor counter */}

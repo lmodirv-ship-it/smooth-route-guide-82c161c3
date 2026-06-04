@@ -53,7 +53,7 @@ const SupervisorLayout = () => {
       {/* Sidebar */}
       <aside className={`${sidebarCollapsed ? "w-16" : "w-64"} glass-strong border-l border-border hidden lg:flex flex-col transition-all duration-300`}>
         <div className="p-4 flex items-center gap-3 border-b border-border">
-          <img src={logo} alt="HN" className="w-9 h-9 flex-shrink-0" />
+          <a href="/" aria-label="Home"><img src={logo} alt="HN" className="w-9 h-9 flex-shrink-0 cursor-pointer" /></a>
           {!sidebarCollapsed && (
             <span className="font-bold text-lg text-gradient-primary font-display">{t.admin.supervisorPanel}</span>
           )}
@@ -104,7 +104,7 @@ const SupervisorLayout = () => {
                 <X className="w-5 h-5 text-muted-foreground" />
               </button>
               <div className="flex items-center gap-2">
-                <img src={logo} alt="HN" className="w-8 h-8" />
+                <a href="/" aria-label="Home"><img src={logo} alt="HN" className="w-8 h-8 cursor-pointer" /></a>
                 <span className="font-bold text-gradient-primary font-display text-sm">{t.admin.supervisorPanel}</span>
               </div>
             </div>

@@ -69,7 +69,7 @@ const CompleteProfile = () => {
   return (
     <div className="min-h-screen flex flex-col items-center px-6 py-10 gradient-hero" dir="rtl">
       <motion.div initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} className="flex flex-col items-center mb-8">
-        <img src={logo} alt="HN Driver" className="w-16 h-16 mb-3" />
+        <a href="/" aria-label="Home"><img src={logo} alt="HN Driver" className="w-16 h-16 mb-3 cursor-pointer" /></a>
         <h1 className="text-2xl font-bold text-foreground">إكمال الملف الشخصي</h1>
       </motion.div>
 
