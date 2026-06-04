@@ -1890,6 +1890,51 @@ export type Database = {
           },
         ]
       }
+      driver_work_sessions: {
+        Row: {
+          created_at: string
+          driver_id: string
+          duration_minutes: number | null
+          ended_at: string | null
+          id: string
+          started_at: string
+          work_date: string
+        }
+        Insert: {
+          created_at?: string
+          driver_id: string
+          duration_minutes?: number | null
+          ended_at?: string | null
+          id?: string
+          started_at?: string
+          work_date?: string
+        }
+        Update: {
+          created_at?: string
+          driver_id?: string
+          duration_minutes?: number | null
+          ended_at?: string | null
+          id?: string
+          started_at?: string
+          work_date?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "driver_work_sessions_driver_id_fkey"
+            columns: ["driver_id"]
+            isOneToOne: false
+            referencedRelation: "active_drivers_public"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "driver_work_sessions_driver_id_fkey"
+            columns: ["driver_id"]
+            isOneToOne: false
+            referencedRelation: "drivers"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       drivers: {
         Row: {
           car_id: string | null
@@ -1901,6 +1946,7 @@ export type Database = {
           id: string
           license_no: string
           location_updated_at: string | null
+          online_since: string | null
           rating: number | null
           status: string
           user_id: string
@@ -1915,6 +1961,7 @@ export type Database = {
           id?: string
           license_no?: string
           location_updated_at?: string | null
+          online_since?: string | null
           rating?: number | null
           status?: string
           user_id: string
@@ -1929,6 +1976,7 @@ export type Database = {
           id?: string
           license_no?: string
           location_updated_at?: string | null
+          online_since?: string | null
           rating?: number | null
           status?: string
           user_id?: string
@@ -5905,22 +5953,25 @@ export type Database = {
           current_lat: number | null
           current_lng: number | null
           id: string | null
+          online_since: string | null
           rating: number | null
           status: string | null
         }
         Insert: {
           car_id?: string | null
-          current_lat?: never
-          current_lng?: never
+          current_lat?: number | null
+          current_lng?: number | null
           id?: string | null
+          online_since?: string | null
           rating?: number | null
           status?: string | null
         }
         Update: {
           car_id?: string | null
-          current_lat?: never
-          current_lng?: never
+          current_lat?: number | null
+          current_lng?: number | null
           id?: string | null
+          online_since?: string | null
           rating?: number | null
           status?: string | null
         }
@@ -5940,10 +5991,48 @@ export type Database = {
         Args: { p_candidate_id: string }
         Returns: string
       }
+      available_delivery_orders: {
+        Args: never
+        Returns: {
+          category: string
+          city: string
+          country: string
+          created_at: string
+          delivery_address: string
+          delivery_fee: number
+          delivery_lat: number
+          delivery_lng: number
+          delivery_type: string
+          distance: number
+          estimated_price: number
+          estimated_time: number
+          id: string
+          items: Json
+          notes: string
+          order_code: string
+          payment_method: string
+          pickup_address: string
+          pickup_lat: number
+          pickup_lng: number
+          status: string
+          store_id: string
+          store_name: string
+          total_price: number
+          user_id: string
+          zone_id: string
+        }[]
+      }
       cleanup_old_health_data: { Args: never; Returns: undefined }
       delete_email: {
         Args: { message_id: number; queue_name: string }
         Returns: boolean
+      }
+      driver_daily_hours: {
+        Args: { p_days?: number; p_driver_id: string }
+        Returns: {
+          day: string
+          minutes: number
+        }[]
       }
       enforce_rate_limit: {
         Args: {
@@ -5959,6 +6048,13 @@ export type Database = {
         Returns: number
       }
       generate_entity_code: { Args: { prefix: string }; Returns: string }
+      get_merchant_credentials: {
+        Args: { p_merchant_id: string }
+        Returns: {
+          api_key: string
+          bank_account_number: string
+        }[]
+      }
       get_public_tables: { Args: never; Returns: string[] }
       get_table_columns: {
         Args: { p_table: string }
