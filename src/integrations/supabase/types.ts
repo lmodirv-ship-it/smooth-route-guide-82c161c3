@@ -6056,6 +6056,7 @@ export type Database = {
         }[]
       }
       get_public_tables: { Args: never; Returns: string[] }
+      get_store_commission: { Args: { p_store_id: string }; Returns: number }
       get_table_columns: {
         Args: { p_table: string }
         Returns: {
