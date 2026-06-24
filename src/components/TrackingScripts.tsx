@@ -25,14 +25,15 @@ const TrackingScripts = () => {
         if (data?.value) {
           const v = data.value as Record<string, unknown>;
           setConfig({
-            facebookPixelId: String(v.facebookPixelId || ""),
-            googleAdsId: String(v.googleAdsId || ""),
-            googleAnalyticsId: String(v.googleAnalyticsId || ""),
-            tiktokPixelId: String(v.tiktokPixelId || ""),
-            snapPixelId: String(v.snapPixelId || ""),
-            linkedinPartnerId: String(v.linkedinPartnerId || ""),
-            twitterPixelId: String(v.twitterPixelId || ""),
+            facebookPixelId: safeId(v.facebookPixelId),
+            googleAdsId: safeId(v.googleAdsId),
+            googleAnalyticsId: safeId(v.googleAnalyticsId),
+            tiktokPixelId: safeId(v.tiktokPixelId),
+            snapPixelId: safeId(v.snapPixelId),
+            linkedinPartnerId: safeId(v.linkedinPartnerId),
+            twitterPixelId: safeId(v.twitterPixelId),
           });
+
         }
       });
   }, []);
