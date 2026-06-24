@@ -14,6 +14,11 @@ interface TrackingConfig {
 const TrackingScripts = () => {
   const [config, setConfig] = useState<TrackingConfig>({});
 
+  // Pixel/tag IDs only ever contain alphanumerics, dashes, underscores.
+  // Strip everything else to prevent script injection via DB-sourced values.
+  const safeId = (v: unknown) => String(v ?? "").replace(/[^a-zA-Z0-9_-]/g, "").slice(0, 64);
+
+
   useEffect(() => {
     supabase.from("app_settings").select("value").eq("key", "branding_settings").maybeSingle()
       .then(({ data }) => {
