@@ -1617,19 +1617,24 @@ async function executeTool(supabase: any, name: string, args: any): Promise<stri
         });
       }
       case "manage_app_settings": {
+        const SENSITIVE_KEYS = ["api_keys", "custom_api_keys", "paypal_settings", "stripe_settings", "twilio_settings"];
+        const isSensitive = (k?: string) => !!k && SENSITIVE_KEYS.includes(k);
         if (args.action === "list_all") {
           const { data, error } = await supabase.from("app_settings").select("*").order("key");
           if (error) return JSON.stringify({ error: error.message });
-          return JSON.stringify({ settings: data, total: data?.length || 0 });
+          const filtered = (data || []).filter((row: any) => !SENSITIVE_KEYS.includes(row.key));
+          return JSON.stringify({ settings: filtered, total: filtered.length, restricted_keys_hidden: SENSITIVE_KEYS });
         }
         if (args.action === "get") {
           if (!args.key) return JSON.stringify({ error: "key مطلوب" });
+          if (isSensitive(args.key)) return JSON.stringify({ error: "هذا المفتاح محظور لأسباب أمنية (يحتوي أسرار حساسة)" });
           const { data, error } = await supabase.from("app_settings").select("*").eq("key", args.key).maybeSingle();
           if (error) return JSON.stringify({ error: error.message });
           return JSON.stringify(data || { key: args.key, value: null, message: "الإعداد غير موجود" });
         }
         if (args.action === "set") {
           if (!args.key) return JSON.stringify({ error: "key مطلوب" });
+          if (isSensitive(args.key)) return JSON.stringify({ error: "هذا المفتاح محظور لأسباب أمنية" });
           const { data: existing } = await supabase.from("app_settings").select("id").eq("key", args.key).maybeSingle();
           if (existing) {
             const { error } = await supabase.from("app_settings").update({ value: args.value, updated_at: new Date().toISOString() }).eq("key", args.key);
@@ -1643,14 +1648,16 @@ async function executeTool(supabase: any, name: string, args: any): Promise<stri
         }
         if (args.action === "delete") {
           if (!args.key) return JSON.stringify({ error: "key مطلوب" });
+          if (isSensitive(args.key)) return JSON.stringify({ error: "هذا المفتاح محظور لأسباب أمنية" });
           const { error } = await supabase.from("app_settings").delete().eq("key", args.key);
           if (error) return JSON.stringify({ error: error.message });
           return JSON.stringify({ success: true, action: "deleted", key: args.key });
         }
         if (args.action === "bulk_set") {
           if (!args.settings?.length) return JSON.stringify({ error: "settings مطلوبة" });
-          let updated = 0, created = 0;
+          let updated = 0, created = 0, skipped = 0;
           for (const s of args.settings) {
+            if (isSensitive(s.key)) { skipped++; continue; }
             const { data: existing } = await supabase.from("app_settings").select("id").eq("key", s.key).maybeSingle();
             if (existing) {
               await supabase.from("app_settings").update({ value: s.value, updated_at: new Date().toISOString() }).eq("key", s.key);
@@ -1660,10 +1667,11 @@ async function executeTool(supabase: any, name: string, args: any): Promise<stri
               created++;
             }
           }
-          return JSON.stringify({ success: true, updated, created, total: args.settings.length });
+          return JSON.stringify({ success: true, updated, created, skipped_sensitive: skipped, total: args.settings.length });
         }
         return JSON.stringify({ error: "Invalid action" });
       }
+
       case "db_create_table": {
         const FORBIDDEN_TABLES = ["user_roles", "auth", "storage", "realtime"];
         const tableName = (args.table_name || "").trim().toLowerCase().replace(/[^a-z0-9_]/g, "");
