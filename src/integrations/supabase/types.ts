@@ -4882,6 +4882,36 @@ export type Database = {
         }
         Relationships: []
       }
+      smart_assistant_audit_log: {
+        Row: {
+          action: string
+          changed_by: string | null
+          created_at: string
+          id: string
+          new_value: Json | null
+          notes: string | null
+          previous_value: Json | null
+        }
+        Insert: {
+          action: string
+          changed_by?: string | null
+          created_at?: string
+          id?: string
+          new_value?: Json | null
+          notes?: string | null
+          previous_value?: Json | null
+        }
+        Update: {
+          action?: string
+          changed_by?: string | null
+          created_at?: string
+          id?: string
+          new_value?: Json | null
+          notes?: string | null
+          previous_value?: Json | null
+        }
+        Relationships: []
+      }
       smart_assistant_commands: {
         Row: {
           accepted_at: string | null
@@ -4930,6 +4960,54 @@ export type Database = {
           status?: string
           target_page?: string | null
           updated_at?: string
+        }
+        Relationships: []
+      }
+      smart_assistant_config: {
+        Row: {
+          allowed_roles: string[]
+          daily_request_limit: number
+          file_uploads_enabled: boolean
+          id: number
+          is_enabled: boolean
+          maintenance_message: string
+          max_messages_per_session: number
+          model: string
+          system_prompt: string
+          temperature: number
+          updated_at: string
+          updated_by: string | null
+          voice_enabled: boolean
+        }
+        Insert: {
+          allowed_roles?: string[]
+          daily_request_limit?: number
+          file_uploads_enabled?: boolean
+          id?: number
+          is_enabled?: boolean
+          maintenance_message?: string
+          max_messages_per_session?: number
+          model?: string
+          system_prompt?: string
+          temperature?: number
+          updated_at?: string
+          updated_by?: string | null
+          voice_enabled?: boolean
+        }
+        Update: {
+          allowed_roles?: string[]
+          daily_request_limit?: number
+          file_uploads_enabled?: boolean
+          id?: number
+          is_enabled?: boolean
+          maintenance_message?: string
+          max_messages_per_session?: number
+          model?: string
+          system_prompt?: string
+          temperature?: number
+          updated_at?: string
+          updated_by?: string | null
+          voice_enabled?: boolean
         }
         Relationships: []
       }

@@ -40,6 +40,7 @@ const ZonesManagement = lazy(() => import("@/admin/pages/ZonesManagement"));
 const AdminSettings = lazy(() => import("@/admin/pages/Settings"));
 const CommissionRatesPage = lazy(() => import("@/admin/pages/CommissionRates"));
 const SmartAssistantPage = lazy(() => import("@/admin/pages/SmartAssistant"));
+const SmartAssistantManagementPage = lazy(() => import("@/admin/pages/SmartAssistantManagement"));
 const SubAssistantsPage = lazy(() => import("@/admin/pages/SubAssistants"));
 const SupervisorsPage = lazy(() => import("@/admin/pages/Supervisors"));
 const SetupAdmin = lazy(() => import("@/admin/pages/SetupAdmin"));
@@ -128,6 +129,7 @@ export const adminRouteElements = (
       <Route path="city-activation" element={L(CityActivation)} />
       <Route path="commission-rates" element={L(CommissionRatesPage)} />
       <Route path="smart-assistant" element={L(SmartAssistantPage)} />
+      <Route path="smart-assistant-management" element={L(SmartAssistantManagementPage)} />
       <Route path="sub-assistants" element={L(SubAssistantsPage)} />
       <Route path="driver-packages" element={L(DriverPackages)} />
       <Route path="themes" element={L(ThemesPage)} />

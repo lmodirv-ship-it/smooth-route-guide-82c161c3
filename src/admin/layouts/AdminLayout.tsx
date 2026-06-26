@@ -98,6 +98,7 @@ const AdminLayout = () => {
     { path: "/admin/drivers", icon: Car, label: t.admin.drivers },
     { path: "/admin/driver-pipeline", icon: UserCog, label: "خط أنابيب السائقين" },
     { path: "/admin/clients", icon: Users, label: t.admin.clients },
+    { path: "/admin/smart-assistant-management", icon: Bot, label: "🤖 إدارة المساعد الذكي" },
     { path: "/admin/earnings", icon: TrendingUp, label: t.admin.earningsMenu },
     { path: "/admin/map", icon: MapPin, label: t.admin.liveMap },
     { path: "/admin/alerts", icon: AlertTriangle, label: t.admin.alerts },
