@@ -29,7 +29,9 @@ interface UserRecord {
 }
 
 const ROLE_LABELS: Record<string, string> = {
-  admin: "مسؤول", agent: "مركز اتصال", user: "عميل", driver: "سائق", moderator: "مشرف", delivery: "سائق توصيل",
+  admin: "مسؤول", moderator: "مشرف", agent: "مركز اتصال",
+  driver: "سائق ركاب", delivery: "سائق توصيل",
+  store_owner: "صاحب محل", user: "عميل", smart_admin_assistant: "مساعد ذكي",
 };
 
 const ROLE_COLORS: Record<string, string> = {
