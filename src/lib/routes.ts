@@ -29,15 +29,15 @@ export const ROLE_DASHBOARD: Record<string, string> = {
 
 /** Human-readable labels (Arabic) for each DB role. */
 export const ROLE_LABELS: Record<string, string> = {
-  driver: "سائق",
+  admin: "مسؤول",
+  moderator: "مشرف",
+  agent: "مركز اتصال",
+  driver: "سائق ركاب",
+  delivery: "سائق توصيل",
+  store_owner: "صاحب محل",
   client: "عميل",
   user: "عميل",
-  delivery: "سائق توصيل",
-  admin: "مسؤول",
-  agent: "مركز اتصال",
-  moderator: "مشرف",
-  store_owner: "صاحب محل",
-  smart_admin_assistant: "المساعد الإداري الذكي",
+  smart_admin_assistant: "مساعد ذكي",
 };
 
 /**
