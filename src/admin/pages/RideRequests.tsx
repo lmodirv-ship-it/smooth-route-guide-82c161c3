@@ -15,7 +15,7 @@ interface RideRequest {
 }
 
 const AdminRideRequests = () => {
-  const { selectedCountry, selectedCity } = useAdminGeo();
+  const { selectedCountry, selectedCity, setSelectedCountry, setSelectedCity } = useAdminGeo();
   const [requests, setRequests] = useState<RideRequest[]>([]);
   const [filter, setFilter] = useState<"pending" | "accepted" | "rejected" | "all">("pending");
   const [processingId, setProcessingId] = useState<string | null>(null);
@@ -132,7 +132,19 @@ const AdminRideRequests = () => {
             </thead>
             <tbody>
               {requests.length === 0 && (
-                <tr><td colSpan={8} className="p-8 text-center text-muted-foreground">لا توجد طلبات</td></tr>
+                <tr>
+                  <td colSpan={8} className="p-8 text-center text-muted-foreground">
+                    لا توجد طلبات مطابقة
+                    {(selectedCountry !== "all" || selectedCity !== "all") && (
+                      <div className="mt-2 text-xs text-warning">
+                        الفلتر الجغرافي مفعّل: {selectedCountry !== "all" ? selectedCountry : ""} {selectedCity !== "all" ? `/ ${selectedCity}` : ""}
+                        <button onClick={() => { setSelectedCountry("all"); setSelectedCity("all"); }} className="ml-2 underline text-primary">
+                          عرض كل الدول
+                        </button>
+                      </div>
+                    )}
+                  </td>
+                </tr>
               )}
               {requests.map((req) => (
                 <motion.tr key={req.id} initial={{ opacity: 0 }} animate={{ opacity: 1 }}
