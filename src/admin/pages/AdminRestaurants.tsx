@@ -273,7 +273,7 @@ const AdminRestaurants = () => {
         await supabase.from("stores").update({ ...storeForm }).eq("id", editingStore.id);
         toast({ title: `${tr.storeUpdated} ✅` });
       } else {
-        await supabase.from("stores").insert({ ...storeForm, category: "restaurant", is_open: true, isActive: true });
+        await supabase.from("stores").insert({ ...storeForm, category: "restaurant", is_open: true } as any);
         toast({ title: `${tr.storeAdded} ✅` });
       }
       setShowStoreDialog(false);

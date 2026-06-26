@@ -66,7 +66,7 @@ const MyStore = () => {
 
   const handleUpdateStore = async (field: string, value: any) => {
     if (!store) return;
-    const { error } = await supabase.from("stores").update({ [field]: value }).eq("id", store.id);
+    const { error } = await supabase.from("stores").update({ [field]: value } as any).eq("id", store.id);
     if (error) { toast({ title: "خطأ", description: error.message, variant: "destructive" }); return; }
     setStore({ ...store, [field]: value });
   };

@@ -93,7 +93,7 @@ const CCDashboard = () => {
   }, [fetchProspects]);
 
   const updateProspect = async (id: string, updates: Record<string, any>) => {
-    const { error } = await supabase.from("prospects").update(updates).eq("id", id);
+    const { error } = await supabase.from("prospects").update(updates as any).eq("id", id);
     if (error) toast({ title: "خطأ", description: error.message, variant: "destructive" });
     else { toast({ title: "تم التحديث ✅" }); fetchProspects(); }
   };
@@ -250,7 +250,7 @@ const CCDashboard = () => {
 
   const handleOrderAction = async (orderId: string, newStatus: string, extra?: Record<string, any>) => {
     const updates: Record<string, any> = { status: newStatus, updated_at: new Date().toISOString(), ...extra };
-    const { error } = await supabase.from("delivery_orders").update(updates).eq("id", orderId);
+    const { error } = await supabase.from("delivery_orders").update(updates as any).eq("id", orderId);
     if (error) {
       toast({ title: "خطأ", description: error.message, variant: "destructive" });
     } else {

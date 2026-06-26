@@ -122,7 +122,7 @@ const DeliveryOrdersBoard = ({ title }: { title: string }) => {
 
   const updateOrderStatus = async (orderId: string, status: string, extra?: Record<string, any>) => {
     const updates: Record<string, any> = { status, updated_at: new Date().toISOString(), ...extra };
-    const { error } = await supabase.from("delivery_orders").update(updates).eq("id", orderId);
+    const { error } = await supabase.from("delivery_orders").update(updates as any).eq("id", orderId);
     if (error) {
       toast({ title: "خطأ", description: error.message, variant: "destructive" });
     } else {

@@ -91,22 +91,27 @@ const DriverPage = () => {
       if (profile?.avatar_url) setDriverAvatar(profile.avatar_url);
       setDriverRating(Number(profile?.avg_rating) || 0);
 
-      const { data: activeRides } = await supabase.from("ride_requests").select("id, status")
-        .eq("driver_id", user.id).in("status", ["accepted", "in_progress", "arriving"]).limit(1);
-      setActiveRideId(activeRides?.[0]?.id || null);
-
-      const todayStart = new Date();
-      todayStart.setHours(0, 0, 0, 0);
-      const { data: completedRides } = await supabase.from("ride_requests").select("id, price")
-        .eq("driver_id", user.id).eq("status", "completed").gte("created_at", todayStart.toISOString());
-
-      const trips = completedRides?.length || 0;
-      const grossEarnings = completedRides?.reduce((sum, r) => sum + (Number(r.price) || 0), 0) || 0;
-
-      const { data: driverData } = await supabase.from("drivers").select("rating, driver_type").eq("user_id", user.id).single();
+      // Resolve driver record id (drivers.id ≠ auth.uid)
+      const { data: driverData } = await supabase.from("drivers").select("id, rating, driver_type").eq("user_id", user.id).maybeSingle();
       if (driverData?.driver_type) setDriverType(driverData.driver_type);
+      const driverRecordId = driverData?.id;
 
-      setTodayStats({ trips, earnings: driverNetEarnings(grossEarnings), rating: Number(driverData?.rating) || 0 });
+      if (driverRecordId) {
+        const { data: activeRides } = await supabase.from("ride_requests").select("id, status")
+          .eq("driver_id", driverRecordId).in("status", ["accepted", "in_progress", "arriving"]).limit(1);
+        setActiveRideId(activeRides?.[0]?.id || null);
+
+        const todayStart = new Date();
+        todayStart.setHours(0, 0, 0, 0);
+        const { data: completedRides } = await supabase.from("ride_requests").select("id, price")
+          .eq("driver_id", driverRecordId).eq("status", "completed").gte("created_at", todayStart.toISOString());
+
+        const trips = completedRides?.length || 0;
+        const grossEarnings = completedRides?.reduce((sum, r) => sum + (Number(r.price) || 0), 0) || 0;
+        setTodayStats({ trips, earnings: driverNetEarnings(grossEarnings), rating: Number(driverData?.rating) || 0 });
+      } else {
+        setTodayStats({ trips: 0, earnings: 0, rating: Number(driverData?.rating) || 0 });
+      }
     };
     fetchStats();
   }, []);
