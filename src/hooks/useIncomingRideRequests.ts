@@ -53,16 +53,35 @@ export function useIncomingRideRequests(isOnline: boolean) {
     }
     fetchRequests();
 
+    // اشتراك على كل تغييرات الجدول بدون فلتر حالة، حتى نلتقط
+    // تحولات pending → cancelled/accepted ولا يبقى طلب "زومبي" في الواجهة.
     const channel = supabase
       .channel('ride-requests-driver')
       .on(
         'postgres_changes',
-        { event: '*', schema: 'public', table: 'ride_requests', filter: 'status=eq.pending' },
-        () => { fetchRequests(); }
+        { event: '*', schema: 'public', table: 'ride_requests' },
+        (payload: any) => {
+          const rowId = payload?.new?.id ?? payload?.old?.id;
+          const newStatus = payload?.new?.status;
+          const newDriverId = payload?.new?.driver_id;
+          // إزالة فورية محلياً إذا لم يعد الطلب صالحاً للعرض
+          if (rowId && (payload.eventType === 'DELETE'
+              || (newStatus && newStatus !== 'pending')
+              || newDriverId)) {
+            setRequests((prev) => prev.filter((r) => r.id !== rowId));
+          }
+          fetchRequests();
+        }
       )
       .subscribe();
 
-    return () => { supabase.removeChannel(channel); };
+    // شبكة أمان: refetch كل 15 ثانية في حال فاتنا حدث realtime
+    const poll = setInterval(() => { fetchRequests(); }, 15000);
+
+    return () => {
+      supabase.removeChannel(channel);
+      clearInterval(poll);
+    };
   }, [fetchRequests, isOnline]);
 
   const acceptRequest = useCallback(async (request: RideRequest) => {
