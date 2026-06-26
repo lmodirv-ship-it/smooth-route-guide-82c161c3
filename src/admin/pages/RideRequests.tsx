@@ -15,7 +15,7 @@ interface RideRequest {
 }
 
 const AdminRideRequests = () => {
-  const { selectedCountry, selectedCity } = useAdminGeo();
+  const { selectedCountry, selectedCity, setSelectedCountry, setSelectedCity } = useAdminGeo();
   const [requests, setRequests] = useState<RideRequest[]>([]);
   const [filter, setFilter] = useState<"pending" | "accepted" | "rejected" | "all">("pending");
   const [processingId, setProcessingId] = useState<string | null>(null);
