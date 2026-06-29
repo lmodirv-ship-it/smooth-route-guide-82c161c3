@@ -65,6 +65,7 @@ const App = () => (
           <CartProvider>
             <TrackingScripts />
             <CookieConsentBanner />
+            <MoroccoMatchPopup />
             <SmartErrorBoundary>
               <ApkRoleGate>
                 <AppInner />
